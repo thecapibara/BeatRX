@@ -69,66 +69,187 @@ const SCALES = {
   'C_major': ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
   'G_major': ['G', 'A', 'B', 'C', 'D', 'E', 'F#'],
   'D_major': ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'],
+  'E_major': ['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#'],
+  'A_major': ['A', 'B', 'C#', 'D', 'E', 'F#', 'G#'],
+  'B_major': ['B', 'C#', 'D#', 'E', 'F#', 'G#', 'A#'],
+
+  'C_minor': ['C', 'D', 'Eb', 'F', 'G', 'Ab', 'Bb'], // C Natural Minor
+  'G_minor': ['G', 'A', 'Bb', 'C', 'D', 'Eb', 'F'], // G Natural Minor
+  'D_minor': ['D', 'E', 'F', 'G', 'A', 'Bb', 'C'], // D Natural Minor
+  'E_minor': ['E', 'F#', 'G', 'A', 'B', 'C', 'D'], // E Natural Minor
+  'A_minor': ['A', 'B', 'C', 'D', 'E', 'F', 'G'], // A Natural Minor
+  'B_minor': ['B', 'C#', 'D', 'E', 'F#', 'G', 'A'], // B Natural Minor
+
+  'C_harmonic_minor': ['C', 'D', 'Eb', 'F', 'G', 'Ab', 'B'], // C Harmonic Minor
+  'G_harmonic_minor': ['G', 'A', 'Bb', 'C', 'D', 'Eb', 'F#'], // G Harmonic Minor
+  'D_harmonic_minor': ['D', 'E', 'F', 'G', 'A', 'Bb', 'C#'], // D Harmonic Minor
+  'E_harmonic_minor': ['E', 'F#', 'G', 'A', 'B', 'C', 'D#'], // E Harmonic Minor
+  'A_harmonic_minor': ['A', 'B', 'C', 'D', 'E', 'F', 'G#'], // A Harmonic Minor
+  'B_harmonic_minor': ['B', 'C#', 'D', 'E', 'F#', 'G', 'A#'], // B Harmonic Minor
 };
 
 // Common chord progressions in Roman numerals, mapped to absolute notes later
 const CHORD_PROGRESSIONS_DEFINITIONS = {
   'C_major': [
-    { degree: 'I', rootOffset: 0, type: 'major' },    // C Major
-    { degree: 'IV', rootOffset: 5, type: 'major' },   // F Major
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' }, // G Dominant 7
-    { degree: 'I', rootOffset: 0, type: 'major' },    // C Major
+    { degree: 'I', rootOffset: 0, type: 'major' },
+    { degree: 'IV', rootOffset: 5, type: 'major' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'I', rootOffset: 0, type: 'major' },
   ],
   'G_major': [
-    { degree: 'I', rootOffset: 0, type: 'major' },    // G Major
-    { degree: 'IV', rootOffset: 5, type: 'major' },   // C Major
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' }, // D Dominant 7
-    { degree: 'I', rootOffset: 0, type: 'major' },    // G Major
+    { degree: 'I', rootOffset: 0, type: 'major' },
+    { degree: 'IV', rootOffset: 5, type: 'major' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'I', rootOffset: 0, type: 'major' },
   ],
   'D_major': [
-    { degree: 'I', rootOffset: 0, type: 'major' },    // D Major
-    { degree: 'IV', rootOffset: 5, type: 'major' },   // G Major
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' }, // A Dominant 7
-    { degree: 'I', rootOffset: 0, type: 'major' },    // D Major
+    { degree: 'I', rootOffset: 0, type: 'major' },
+    { degree: 'IV', rootOffset: 5, type: 'major' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'I', rootOffset: 0, type: 'major' },
+  ],
+  'E_major': [
+    { degree: 'I', rootOffset: 0, type: 'major' },
+    { degree: 'IV', rootOffset: 5, type: 'major' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'I', rootOffset: 0, type: 'major' },
+  ],
+  'A_major': [
+    { degree: 'I', rootOffset: 0, type: 'major' },
+    { degree: 'IV', rootOffset: 5, type: 'major' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'I', rootOffset: 0, type: 'major' },
+  ],
+  'B_major': [
+    { degree: 'I', rootOffset: 0, type: 'major' },
+    { degree: 'IV', rootOffset: 5, type: 'major' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'I', rootOffset: 0, type: 'major' },
+  ],
+
+  'C_minor': [
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+    { degree: 'iv', rootOffset: 5, type: 'minor' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+  ],
+  'G_minor': [
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+    { degree: 'iv', rootOffset: 5, type: 'minor' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+  ],
+  'D_minor': [
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+    { degree: 'iv', rootOffset: 5, type: 'minor' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+  ],
+  'E_minor': [
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+    { degree: 'iv', rootOffset: 5, type: 'minor' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+  ],
+  'A_minor': [
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+    { degree: 'iv', rootOffset: 5, type: 'minor' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+  ],
+  'B_minor': [
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+    { degree: 'iv', rootOffset: 5, type: 'minor' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+  ],
+
+  'C_harmonic_minor': [
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+    { degree: 'iv', rootOffset: 5, type: 'minor' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+  ],
+  'G_harmonic_minor': [
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+    { degree: 'iv', rootOffset: 5, type: 'minor' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+  ],
+  'D_harmonic_minor': [
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+    { degree: 'iv', rootOffset: 5, type: 'minor' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+  ],
+  'E_harmonic_minor': [
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+    { degree: 'iv', rootOffset: 5, type: 'minor' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+  ],
+  'A_harmonic_minor': [
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+    { degree: 'iv', rootOffset: 5, type: 'minor' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+  ],
+  'B_harmonic_minor': [
+    { degree: 'i', rootOffset: 0, type: 'minor' },
+    { degree: 'iv', rootOffset: 5, type: 'minor' },
+    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
+    { degree: 'i', rootOffset: 0, type: 'minor' },
   ],
 } as const;
 
-const RANDOM_KEYS = ['C_major', 'G_major', 'D_major'] as const;
-type RandomKey = typeof RANDOM_KEYS[number];
+const ALL_KEYS = [
+  'C_major', 'G_major', 'D_major', 'E_major', 'A_major', 'B_major',
+  'C_minor', 'G_minor', 'D_minor', 'E_minor', 'A_minor', 'B_minor',
+  'C_harmonic_minor', 'G_harmonic_minor', 'D_harmonic_minor', 'E_harmonic_minor', 'A_harmonic_minor', 'B_harmonic_minor',
+] as const;
+type AllKey = typeof ALL_KEYS[number];
+
+const ROOT_NOTES = ['C', 'D', 'E', 'G', 'A', 'B'] as const;
+type RootNote = typeof ROOT_NOTES[number];
 
 type PlaybackMode = 'loop' | 'song';
+type ScaleMode = 'major' | 'minor' | 'harmonic_minor' | 'random';
+type RootKeyOption = RootNote | 'random';
+
 
 // --- React Component ---
 const App: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeMode, setActiveMode] = useState<'random' | 'manual'>('random');
   const [currentWaveform, setCurrentWaveform] = useState<Waveform>('sawtooth');
-  const [tempo, setTempo] = useState(120); // BPM
+  const [tempo, setTempo] = useState(90); // Default tempo to 90
   const [volume, setVolume] = useState(0); // -60 to 0 dB
   const [isMuted, setIsMuted] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showManualGuide, setShowManualGuide] = useState(false);
 
   // States for Random Mode music data
-  const [randomKey, setRandomKey] = useState<RandomKey>('C_major');
+  const [randomKey, setRandomKey] = useState<AllKey>('C_major');
   const [playbackMode, setPlaybackMode] = useState<PlaybackMode>('loop');
-  const [currentRandomProgression, setCurrentRandomProgression] = useState<string[][]>([]); // Array of chords (each chord is an array of notes)
-  const [currentRandomMelody, setCurrentRandomMelody] = useState<string[]>([]); // Array of melody notes (for loop mode)
+  const [currentRootKey, setCurrentRootKey] = useState<RootKeyOption>('random');
+  const [currentScaleMode, setCurrentScaleMode] = useState<ScaleMode>('random');
+  const [currentRandomProgression, setCurrentRandomProgression] = useState<string[][]>([]);
+  const [currentRandomMelody, setCurrentRandomMelody] = useState<string[]>([]);
 
-  const synthRef = useRef<Tone.PolySynth | null>(null); // Use PolySynth for chords and melody
-  const bassSynthRef = useRef<Tone.Synth | null>(null); // Dedicated synth for bass lines
+  const synthRef = useRef<Tone.PolySynth | null>(null);
+  const bassSynthRef = useRef<Tone.Synth | null>(null);
   const kickSynthRef = useRef<Tone.MembraneSynth | null>(null);
   const snareSynthRef = useRef<Tone.NoiseSynth | null>(null);
   const hihatSynthRef = useRef<Tone.MetalSynth | null>(null);
   const analyserRef = useRef<Tone.Analyser | null>(null);
   const waveformCanvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameId = useRef<number | null>(null);
-  const sequenceRef = useRef<Tone.Sequence | null>(null); // Ref to hold the Tone.Sequence instance
+  const sequenceRef = useRef<Tone.Sequence | null>(null);
 
   // Manual sequencer state
-  const notesForManualSequence = ['C5', 'B4', 'A4', 'G4', 'F4', 'E4', 'D4', 'C4']; // Top to bottom for visual mapping
+  const notesForManualSequence = ['C5', 'B4', 'A4', 'G4', 'F4', 'E4', 'D4', 'C4'];
   const [manualSequence, setManualSequence] = useState<boolean[][]>(
-    Array(notesForManualSequence.length).fill(0).map(() => Array(16).fill(false)) // Rows = notes, Cols = steps
+    Array(notesForManualSequence.length).fill(0).map(() => Array(16).fill(false))
   );
 
   // --- Initialization of Tone.js Components ---
@@ -146,7 +267,7 @@ const App: React.FC = () => {
 
     // Synth for bass notes
     bassSynthRef.current = new Tone.Synth({
-      oscillator: { type: 'sine' }, // Smooth sine wave for bass
+      oscillator: { type: 'sine' },
       envelope: {
         attack: 0.01,
         decay: 0.4,
@@ -188,7 +309,7 @@ const App: React.FC = () => {
       analyserRef.current?.dispose();
       sequenceRef.current?.dispose();
     };
-  }, [currentWaveform]); // Re-initialize synths if waveform changes
+  }, [currentWaveform]);
 
   // --- Update Master Volume ---
   useEffect(() => {
@@ -212,11 +333,11 @@ const App: React.FC = () => {
       canvas.height = displayHeight;
     };
 
-    setCanvasDimensions(); // Set dimensions initially
-    window.addEventListener('resize', setCanvasDimensions); // Listen for window resize
+    setCanvasDimensions();
+    window.addEventListener('resize', setCanvasDimensions);
 
     return () => {
-      window.removeEventListener('resize', setCanvasDimensions); // Cleanup
+      window.removeEventListener('resize', setCanvasDimensions);
     };
   }, []);
 
@@ -224,7 +345,7 @@ const App: React.FC = () => {
   const drawWaveform = useCallback(() => {
     const canvas = waveformCanvasRef.current;
     if (!canvas || !analyserRef.current) {
-      animationFrameId.current = null; // Stop animation if canvas or analyser is missing
+      animationFrameId.current = null;
       return;
     }
 
@@ -234,10 +355,10 @@ const App: React.FC = () => {
       return;
     }
 
-    const dataArray = analyserRef.current.getValue(); // Get time domain data
+    const dataArray = analyserRef.current.getValue();
     const bufferLength = dataArray.length;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#6366f1'; // Indigo 500
     ctx.beginPath();
@@ -246,8 +367,8 @@ const App: React.FC = () => {
     let x = 0;
 
     for (let i = 0; i < bufferLength; i++) {
-      const v = dataArray[i] as number; // AnalyserNode values are typically -1.0 to 1.0
-      const y = (v * (canvas.height / 2)) + (canvas.height / 2); // Map -1 to 0, 1 to height
+      const v = dataArray[i] as number;
+      const y = (v * (canvas.height / 2)) + (canvas.height / 2);
 
       if (i === 0) {
         ctx.moveTo(x, y);
@@ -257,18 +378,17 @@ const App: React.FC = () => {
       x += sliceWidth;
     }
 
-    ctx.lineTo(canvas.width, canvas.height / 2); // Complete the line to the right edge
+    ctx.lineTo(canvas.width, canvas.height / 2);
     ctx.stroke();
 
-    // Request the next animation frame after drawing
     animationFrameId.current = requestAnimationFrame(drawWaveform);
-  }, []); // Removed drawWaveform from its own dependencies
+  }, []);
 
   // Effect to start/stop waveform drawing
   useEffect(() => {
     if (isPlaying) {
-      if (animationFrameId.current === null) { // Only start if not already running
-        animationFrameId.current = requestAnimationFrame(drawWaveform); // Start the loop
+      if (animationFrameId.current === null) {
+        animationFrameId.current = requestAnimationFrame(drawWaveform);
       }
     } else {
       if (animationFrameId.current !== null) {
@@ -281,25 +401,38 @@ const App: React.FC = () => {
         cancelAnimationFrame(animationFrameId.current);
       }
     };
-  }, [isPlaying, drawWaveform]); // drawWaveform is correctly a dependency here
+  }, [isPlaying, drawWaveform]);
+
 
   // --- Music Generation Functions (for Random Mode) ---
-
   const generateRandomMusicData = useCallback(() => {
-    const newKeyName = RANDOM_KEYS[Math.floor(Math.random() * RANDOM_KEYS.length)];
+    let selectedRoot: RootNote;
+    if (currentRootKey === 'random') {
+      selectedRoot = ROOT_NOTES[Math.floor(Math.random() * ROOT_NOTES.length)];
+    } else {
+      selectedRoot = currentRootKey;
+    }
+
+    let selectedScaleType: 'major' | 'minor' | 'harmonic_minor';
+    if (currentScaleMode === 'random') {
+      const scaleTypes = ['major', 'minor', 'harmonic_minor'];
+      selectedScaleType = scaleTypes[Math.floor(Math.random() * scaleTypes.length)] as 'major' | 'minor' | 'harmonic_minor';
+    } else {
+      selectedScaleType = currentScaleMode;
+    }
+
+    const newKeyName: AllKey = `${selectedRoot}_${selectedScaleType}` as AllKey;
     setRandomKey(newKeyName);
 
-    const rootMidiForProgression = noteToMidi(`${SCALES[newKeyName][0]}3`); // Root of the key in octave 3
+    const rootMidiForProgression = noteToMidi(`${SCALES[newKeyName][0]}3`);
     const progressionDefinition = CHORD_PROGRESSIONS_DEFINITIONS[newKeyName];
 
-    // Calculate absolute chord notes for the progression
     const newProgression: string[][] = progressionDefinition.map(chordDef => {
       const rootNoteForChord = midiToNote(rootMidiForProgression + chordDef.rootOffset);
-      return getChordNotes(noteToMidi(`${rootNoteForChord.slice(0, -1)}3`), chordDef.type); // Ensure bass octave
+      return getChordNotes(noteToMidi(`${rootNoteForChord.slice(0, -1)}3`), chordDef.type);
     });
     setCurrentRandomProgression(newProgression);
 
-    // If in loop mode, pre-generate the 16-step melody
     if (playbackMode === 'loop') {
       const scale = SCALES[newKeyName];
       const octaveRange = { min: 4, max: 5 };
@@ -310,25 +443,22 @@ const App: React.FC = () => {
       });
       setCurrentRandomMelody(newMelody);
     } else {
-      setCurrentRandomMelody([]); // Clear for 'song' mode as melody is dynamic
+      setCurrentRandomMelody([]);
     }
 
-  }, [playbackMode]);
+  }, [playbackMode, currentRootKey, currentScaleMode]);
 
-  // Initial generation on component mount, and when playbackMode changes
   useEffect(() => {
     generateRandomMusicData();
-  }, [generateRandomMusicData, playbackMode]);
+  }, [generateRandomMusicData, playbackMode, currentRootKey, currentScaleMode]);
 
   // --- Main Sequencer Logic ---
   const setupSequence = useCallback(() => {
-    // Dispose of existing sequence if any
     if (sequenceRef.current) {
       sequenceRef.current.dispose();
       sequenceRef.current = null;
     }
 
-    // Define the sequence steps (0 to 15)
     const steps = Array(16).fill(0).map((_, i) => i);
 
     sequenceRef.current = new Tone.Sequence((time, step) => {
@@ -337,34 +467,28 @@ const App: React.FC = () => {
       if (activeMode === 'random') {
         const chordIndex = Math.floor(step / 4) % currentRandomProgression.length;
         const currentChord = currentRandomProgression[chordIndex];
-        const scale = SCALES[randomKey]; // Get current key's scale
-        const octaveRange = { min: 4, max: 5 }; // Melody octave range
+        const scale = SCALES[randomKey];
+        const octaveRange = { min: 4, max: 5 };
 
-        // Play melody
         if (playbackMode === 'loop') {
           const melodyNote = currentRandomMelody[step];
           if (melodyNote && synthRef.current) {
             synthRef.current.triggerAttackRelease(melodyNote, '8n', time);
           }
         } else if (playbackMode === 'song') {
-          // Song mode: Dynamically generate melody note for each step
           if (currentChord && synthRef.current) {
             const dynamicMelodyNote = generateConsistentMelodyNote(scale, currentChord, octaveRange);
             synthRef.current.triggerAttackRelease(dynamicMelodyNote, '8n', time);
           }
         }
 
-
-        // Play chord bass note (root of the current chord)
         if (currentChord && step % 4 === 0 && bassSynthRef.current) {
-          // Play the lowest note of the chord as bass, ensuring it's in a lower octave
-          const bassNote = `${currentChord[0].slice(0, -1)}2`; // Octave 2 for bass
+          const bassNote = `${currentChord[0].slice(0, -1)}2`;
           bassSynthRef.current.triggerAttackRelease(bassNote, '2n', time);
         }
 
-        // Play full chord (arpeggiated or block) on strong beats
-        if (currentChord && (step % 8 === 0) && synthRef.current) { // Every 2 bars
-          synthRef.current.triggerAttackRelease(currentChord, '4n', time); // Play full chord
+        if (currentChord && (step % 8 === 0) && synthRef.current) {
+          synthRef.current.triggerAttackRelease(currentChord, '4n', time);
         }
 
       } else { // Manual mode
@@ -377,51 +501,47 @@ const App: React.FC = () => {
 
       // Drum pattern (common for both modes for now)
       if (kickSynthRef.current) {
-        if (step % 4 === 0) kickSynthRef.current.triggerAttackRelease('C1', '8n', time); // Kick on 1
+        if (step % 4 === 0) kickSynthRef.current.triggerAttackRelease('C1', '8n', time);
       }
       if (hihatSynthRef.current) {
-        if (step % 2 === 0) hihatSynthRef.current.triggerAttackRelease('8n', time); // Hi-hat on every 2
+        if (step % 2 === 0) hihatSynthRef.current.triggerAttackRelease('8n', time);
       }
       if (snareSynthRef.current) {
-        if (step % 4 === 2) snareSynthRef.current.triggerAttackRelease('8n', time); // Snare on 3
+        if (step % 4 === 2) snareSynthRef.current.triggerAttackRelease('8n', time);
       }
 
-    }, steps, '16n'); // 16 steps, advancing every 16th note
+    }, steps, '16n');
 
-    // Start or stop the transport and sequence
     if (isPlaying) {
-      Tone.start(); // Ensure audio context is started on user gesture
+      Tone.start();
       sequenceRef.current.start(0);
       Tone.Transport.start();
     } else {
       if (sequenceRef.current) {
-        sequenceRef.current.stop(); // Stop the sequence
+        sequenceRef.current.stop();
       }
-      Tone.Transport.pause(); // Use pause to gracefully stop transport without resetting position or causing negative time errors
+      Tone.Transport.pause();
       setCurrentStep(0);
     }
-  }, [isPlaying, activeMode, manualSequence, currentRandomMelody, currentRandomProgression, randomKey, playbackMode]); // Removed tempo from dependencies
+  }, [isPlaying, activeMode, manualSequence, currentRandomMelody, currentRandomProgression, randomKey, playbackMode, currentWaveform]);
 
-  // Effect to manage sequence lifecycle. This effect itself should NOT depend on tempo.
   useEffect(() => {
-    setupSequence(); // Call setupSequence when other core dependencies change
+    setupSequence();
 
     return () => {
-      // Cleanup
       if (sequenceRef.current) {
         sequenceRef.current.dispose();
         sequenceRef.current = null;
       }
-      // Removed Tone.Transport.stop() from here, as Tone.Transport.pause() is handled in setupSequence
       setCurrentStep(0);
     };
-  }, [isPlaying, activeMode, manualSequence, currentRandomMelody, currentRandomProgression, randomKey, playbackMode, setupSequence]);
+  }, [isPlaying, activeMode, manualSequence, currentRandomMelody, currentRandomProgression, randomKey, playbackMode, setupSequence, currentWaveform]);
 
 
   // --- Event Handlers ---
   const handlePlayPause = async () => {
     if (!isPlaying) {
-      await Tone.start(); // This is crucial for starting AudioContext on user gesture
+      await Tone.start();
       setIsPlaying(true);
     } else {
       setIsPlaying(false);
@@ -431,15 +551,11 @@ const App: React.FC = () => {
   const handleWaveformChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newWaveform = e.target.value as Waveform;
     setCurrentWaveform(newWaveform);
-    if (synthRef.current) {
-      synthRef.current.set({ oscillator: { type: newWaveform } }); // Update PolySynth oscillators
-    }
   };
 
   const handleTempoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTempo = parseInt(e.target.value);
     setTempo(newTempo);
-    // Directly update Tone.Transport.bpm.value without triggering a full sequence re-setup
     Tone.Transport.bpm.value = newTempo;
   };
 
@@ -458,7 +574,7 @@ const App: React.FC = () => {
   const handleManualSequenceToggle = (noteIndex: number, stepIndex: number) => {
     setManualSequence(prev => {
       const newSequence = [...prev];
-      newSequence[noteIndex] = [...newSequence[noteIndex]]; // Create a new array for the row
+      newSequence[noteIndex] = [...newSequence[noteIndex]];
       newSequence[noteIndex][stepIndex] = !newSequence[noteIndex][stepIndex];
       return newSequence;
     });
@@ -474,61 +590,98 @@ const App: React.FC = () => {
 
         {/* Controls Section */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <button
-            onClick={handlePlayPause}
-            className="flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-full shadow-md transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 w-full md:w-auto"
-          >
-            {isPlaying ? <LucidePause className="w-5 h-5 mr-2" /> : <LucidePlay className="w-5 h-5 mr-2" />}
-            {isPlaying ? 'Pause' : 'Play'}
-          </button>
+          <div className="flex items-center gap-4"> {/* Group Play/Pause and Randomize button */}
+            <button
+              onClick={handlePlayPause}
+              className="flex items-center justify-center p-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-full shadow-md transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 w-auto"
+              aria-label={isPlaying ? 'Pause' : 'Play'}
+            >
+              {isPlaying ? <LucidePause className="w-5 h-5" /> : <LucidePlay className="w-5 h-5" />}
+            </button>
+            {activeMode === 'random' && (
+              <button
+                onClick={generateRandomMusicData}
+                className="flex items-center justify-center p-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 w-auto"
+                aria-label="Randomize Melody"
+              >
+                <LucideShuffle className="w-5 h-5" />
+              </button>
+            )}
+          </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto"> {/* Adjusted for better mobile alignment */}
+
+          {/* This div contains ALL other controls */}
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-4 mt-4 md:mt-0 flex-grow">
+
+            {/* Mode select */}
             <label htmlFor="mode-select" className="sr-only">Mode</label>
             <select
               id="mode-select"
               value={activeMode}
               onChange={(e) => setActiveMode(e.target.value as 'random' | 'manual')}
-              className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm w-full sm:w-auto"
+              className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm flex-grow sm:flex-grow-0"
             >
-              <option value="random">Random Mode</option>
-              <option value="manual">Manual Mode</option>
+              <option value="random">Random</option>
+              <option value="manual">Manual</option>
             </select>
 
+            {/* Waveform select */}
             <label htmlFor="waveform-select" className="sr-only">Waveform</label>
             <select
               id="waveform-select"
               value={currentWaveform}
               onChange={handleWaveformChange}
-              className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm w-full sm:w-auto"
+              className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm flex-grow sm:flex-grow-0"
             >
               {waveforms.map((wf) => (
                 <option key={wf} value={wf}>{wf.charAt(0).toUpperCase() + wf.slice(1)}</option>
               ))}
             </select>
+
+            {activeMode === 'random' && (
+              <>
+                {/* Playback Mode select */}
+                <label htmlFor="playback-mode-select" className="sr-only">Playback Mode</label>
+                <select
+                  id="playback-mode-select"
+                  value={playbackMode}
+                  onChange={(e) => setPlaybackMode(e.target.value as PlaybackMode)}
+                  className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm flex-grow sm:flex-grow-0"
+                >
+                  <option value="loop">Loop</option>
+                  <option value="song">Song (Continuous)</option>
+                </select>
+
+                {/* Key Selector */}
+                <label htmlFor="key-select" className="sr-only">Key</label>
+                <select
+                  id="key-select"
+                  value={currentRootKey}
+                  onChange={(e) => setCurrentRootKey(e.target.value as RootKeyOption)}
+                  className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm flex-grow sm:flex-grow-0"
+                >
+                  <option value="random">Random</option>
+                  {ROOT_NOTES.map(root => (
+                    <option key={root} value={root}>{root}</option>
+                  ))}
+                </select>
+
+                {/* Scale Mode Selector */}
+                <label htmlFor="scale-mode-select" className="sr-only">Scale Mode</label>
+                <select
+                  id="scale-mode-select"
+                  value={currentScaleMode}
+                  onChange={(e) => setCurrentScaleMode(e.target.value as ScaleMode)}
+                  className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm flex-grow sm:flex-grow-0"
+                >
+                  <option value="random">Random</option>
+                  <option value="major">Major</option>
+                  <option value="minor">Minor</option>
+                  <option value="harmonic_minor">H. Minor</option>
+                </select>
+              </>
+            )}
           </div>
-
-          {activeMode === 'random' && (
-            <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto mt-4 md:mt-0"> {/* New div for better grouping */}
-              <label htmlFor="playback-mode-select" className="sr-only">Playback Mode</label>
-              <select
-                id="playback-mode-select"
-                value={playbackMode}
-                onChange={(e) => setPlaybackMode(e.target.value as PlaybackMode)}
-                className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm w-full sm:w-auto"
-              >
-                <option value="loop">Loop (16 steps)</option>
-                <option value="song">Song (Continuous)</option>
-              </select>
-
-              <button
-                onClick={generateRandomMusicData}
-                className="flex items-center justify-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 text-sm w-full sm:w-auto"
-              >
-                <LucideShuffle className="w-4 h-4 mr-2" />
-                Randomize Melody
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Sliders for Tempo and Volume */}
@@ -541,8 +694,8 @@ const App: React.FC = () => {
             <input
               id="tempo-slider"
               type="range"
-              min="60"
-              max="240"
+              min="40"
+              max="140"
               value={tempo}
               onChange={handleTempoChange}
               className="flex-grow h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-sm accent-indigo-500"
