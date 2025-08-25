@@ -71,3 +71,4 @@ To run this project locally:
 ## 📜 License
 
 The source code for this project is licensed under the **MIT License**. You can find the full license text in the [LICENSE](LICENSE) file.
+
