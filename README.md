@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Vercel App](https://img.shields.io/badge/Vercel-Deployed-brightgreen)](https://beatrx.vercel.app/)
 
-![BeatRX Screenshot](SCREENSHOT.png)
+![BeatRX Screenshot]()
 
 > Instantly create unique, royalty-free, retro-style procedural music with the click of a button.
 
