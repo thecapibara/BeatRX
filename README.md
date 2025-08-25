@@ -1,13 +1,13 @@
 # 🎹 BeatRX Keygen Music Generator
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployed-brightgreen)](VERCEL_URL) //later
+[![Vercel App](https://img.shields.io/badge/Vercel-Deployed-brightgreen)](https://beatrx.vercel.app/)
 
-![BeatRX Screenshot](URL_SCREENSHOT.png) //later
+![BeatRX Screenshot](SCREENSHOT.png)
 
 > Instantly create unique, royalty-free, retro-style procedural music with the click of a button.
 
-[**Live Demo**](YOUR_VERCEL_URL)
+[**Live Demo**](https://beatrx.vercel.app/)
 
 ---
 
