@@ -91,7 +91,7 @@ const CHORD_PROGRESSIONS_DEFINITIONS = {
     { degree: 'V7', rootOffset: 7, type: 'dominant7' }, // A Dominant 7
     { degree: 'I', rootOffset: 0, type: 'major' },    // D Major
   ],
-};
+} as const;
 
 const RANDOM_KEYS = ['C_major', 'G_major', 'D_major'] as const;
 type RandomKey = typeof RANDOM_KEYS[number];
@@ -168,7 +168,7 @@ const App: React.FC = () => {
     }).toDestination();
 
     hihatSynthRef.current = new Tone.MetalSynth({
-      frequency: 200,
+      //frequency: 200,
       envelope: { attack: 0.001, decay: 0.1, release: 0.05 },
       harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1,
     }).toDestination();
@@ -246,7 +246,7 @@ const App: React.FC = () => {
     let x = 0;
 
     for (let i = 0; i < bufferLength; i++) {
-      const v = dataArray[i]; // AnalyserNode values are typically -1.0 to 1.0
+      const v = dataArray[i] as number; // AnalyserNode values are typically -1.0 to 1.0
       const y = (v * (canvas.height / 2)) + (canvas.height / 2); // Map -1 to 0, 1 to height
 
       if (i === 0) {
