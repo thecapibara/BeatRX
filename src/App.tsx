@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as Tone from 'tone';
-import { Play as LucidePlay, Pause as LucidePause, Shuffle as LucideShuffle, Volume2 as LucideVolume2, VolumeX as LucideVolumeX, Info as LucideInfo } from 'lucide-react';
+import { Play as LucidePlay, Pause as LucidePause, Shuffle as LucideShuffle, Volume2 as LucideVolume2, VolumeX as LucideVolumeX, Info as LucideInfo, Drum as LucideDrum } from 'lucide-react';
 
 // --- Utility Functions for Music Theory ---
 
@@ -60,11 +60,19 @@ const generateConsistentMelodyNote = (
   }
 };
 
-// Define available waveforms
-const waveforms = ['sine', 'square', 'sawtooth', 'triangle'] as const;
-type Waveform = typeof waveforms[number];
+// --- Sound & Music Data Definitions ---
 
-// --- Music Data Definitions ---
+const soundPalettes = ['sawtooth', 'square', 'sine', 'triangle', 'Chiptune', 'Synthwave', 'Acid', 'FM Bells'] as const;
+type SoundPalette = typeof soundPalettes[number];
+
+const drumPatterns = [
+    { name: 'House', kick: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0], },
+    { name: 'Breakbeat', kick: [1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0], snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], },
+    { name: 'Trap', kick: [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0], snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1], },
+    { name: 'Minimal', kick: [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], snare: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0], },
+    { name: 'Synthwave', kick: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0], },
+];
+
 const SCALES = {
   'C_major': ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
   'G_major': ['G', 'A', 'B', 'C', 'D', 'E', 'F#'],
@@ -88,118 +96,25 @@ const SCALES = {
   'B_harmonic_minor': ['B', 'C#', 'D', 'E', 'F#', 'G', 'A#'], // B Harmonic Minor
 };
 
-// Common chord progressions in Roman numerals, mapped to absolute notes later
 const CHORD_PROGRESSIONS_DEFINITIONS = {
-  'C_major': [
-    { degree: 'I', rootOffset: 0, type: 'major' },
-    { degree: 'IV', rootOffset: 5, type: 'major' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'I', rootOffset: 0, type: 'major' },
-  ],
-  'G_major': [
-    { degree: 'I', rootOffset: 0, type: 'major' },
-    { degree: 'IV', rootOffset: 5, type: 'major' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'I', rootOffset: 0, type: 'major' },
-  ],
-  'D_major': [
-    { degree: 'I', rootOffset: 0, type: 'major' },
-    { degree: 'IV', rootOffset: 5, type: 'major' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'I', rootOffset: 0, type: 'major' },
-  ],
-  'E_major': [
-    { degree: 'I', rootOffset: 0, type: 'major' },
-    { degree: 'IV', rootOffset: 5, type: 'major' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'I', rootOffset: 0, type: 'major' },
-  ],
-  'A_major': [
-    { degree: 'I', rootOffset: 0, type: 'major' },
-    { degree: 'IV', rootOffset: 5, type: 'major' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'I', rootOffset: 0, type: 'major' },
-  ],
-  'B_major': [
-    { degree: 'I', rootOffset: 0, type: 'major' },
-    { degree: 'IV', rootOffset: 5, type: 'major' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'I', rootOffset: 0, type: 'major' },
-  ],
-
-  'C_minor': [
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-    { degree: 'iv', rootOffset: 5, type: 'minor' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-  ],
-  'G_minor': [
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-    { degree: 'iv', rootOffset: 5, type: 'minor' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-  ],
-  'D_minor': [
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-    { degree: 'iv', rootOffset: 5, type: 'minor' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-  ],
-  'E_minor': [
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-    { degree: 'iv', rootOffset: 5, type: 'minor' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-  ],
-  'A_minor': [
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-    { degree: 'iv', rootOffset: 5, type: 'minor' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-  ],
-  'B_minor': [
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-    { degree: 'iv', rootOffset: 5, type: 'minor' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-  ],
-
-  'C_harmonic_minor': [
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-    { degree: 'iv', rootOffset: 5, type: 'minor' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-  ],
-  'G_harmonic_minor': [
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-    { degree: 'iv', rootOffset: 5, type: 'minor' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-  ],
-  'D_harmonic_minor': [
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-    { degree: 'iv', rootOffset: 5, type: 'minor' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-  ],
-  'E_harmonic_minor': [
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-    { degree: 'iv', rootOffset: 5, type: 'minor' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-  ],
-  'A_harmonic_minor': [
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-    { degree: 'iv', rootOffset: 5, type: 'minor' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-  ],
-  'B_harmonic_minor': [
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-    { degree: 'iv', rootOffset: 5, type: 'minor' },
-    { degree: 'V7', rootOffset: 7, type: 'dominant7' },
-    { degree: 'i', rootOffset: 0, type: 'minor' },
-  ],
+  'C_major': [{ degree: 'I', rootOffset: 0, type: 'major' },{ degree: 'IV', rootOffset: 5, type: 'major' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'I', rootOffset: 0, type: 'major' },],
+  'G_major': [{ degree: 'I', rootOffset: 0, type: 'major' },{ degree: 'IV', rootOffset: 5, type: 'major' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'I', rootOffset: 0, type: 'major' },],
+  'D_major': [{ degree: 'I', rootOffset: 0, type: 'major' },{ degree: 'IV', rootOffset: 5, type: 'major' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'I', rootOffset: 0, type: 'major' },],
+  'E_major': [{ degree: 'I', rootOffset: 0, type: 'major' },{ degree: 'IV', rootOffset: 5, type: 'major' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'I', rootOffset: 0, type: 'major' },],
+  'A_major': [{ degree: 'I', rootOffset: 0, type: 'major' },{ degree: 'IV', rootOffset: 5, type: 'major' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'I', rootOffset: 0, type: 'major' },],
+  'B_major': [{ degree: 'I', rootOffset: 0, type: 'major' },{ degree: 'IV', rootOffset: 5, type: 'major' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'I', rootOffset: 0, type: 'major' },],
+  'C_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' },{ degree: 'iv', rootOffset: 5, type: 'minor' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'i', rootOffset: 0, type: 'minor' },],
+  'G_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' },{ degree: 'iv', rootOffset: 5, type: 'minor' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'i', rootOffset: 0, type: 'minor' },],
+  'D_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' },{ degree: 'iv', rootOffset: 5, type: 'minor' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'i', rootOffset: 0, type: 'minor' },],
+  'E_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' },{ degree: 'iv', rootOffset: 5, type: 'minor' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'i', rootOffset: 0, type: 'minor' },],
+  'A_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' },{ degree: 'iv', rootOffset: 5, type: 'minor' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'i', rootOffset: 0, type: 'minor' },],
+  'B_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' },{ degree: 'iv', rootOffset: 5, type: 'minor' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'i', rootOffset: 0, type: 'minor' },],
+  'C_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' },{ degree: 'iv', rootOffset: 5, type: 'minor' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'i', rootOffset: 0, type: 'minor' },],
+  'G_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' },{ degree: 'iv', rootOffset: 5, type: 'minor' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'i', rootOffset: 0, type: 'minor' },],
+  'D_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' },{ degree: 'iv', rootOffset: 5, type: 'minor' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'i', rootOffset: 0, type: 'minor' },],
+  'E_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' },{ degree: 'iv', rootOffset: 5, type: 'minor' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'i', rootOffset: 0, type: 'minor' },],
+  'A_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' },{ degree: 'iv', rootOffset: 5, type: 'minor' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'i', rootOffset: 0, type: 'minor' },],
+  'B_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' },{ degree: 'iv', rootOffset: 5, type: 'minor' },{ degree: 'V7', rootOffset: 7, type: 'dominant7' },{ degree: 'i', rootOffset: 0, type: 'minor' },],
 } as const;
 
 const ALL_KEYS = [
@@ -221,9 +136,9 @@ type RootKeyOption = RootNote | 'random';
 const App: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeMode, setActiveMode] = useState<'random' | 'manual'>('random');
-  const [currentWaveform, setCurrentWaveform] = useState<Waveform>('sawtooth');
-  const [tempo, setTempo] = useState(90); // Default tempo to 90
-  const [volume, setVolume] = useState(0); // -60 to 0 dB
+  const [soundPalette, setSoundPalette] = useState<SoundPalette>('sawtooth');
+  const [tempo, setTempo] = useState(90);
+  const [volume, setVolume] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showManualGuide, setShowManualGuide] = useState(false);
@@ -235,16 +150,22 @@ const App: React.FC = () => {
   const [currentScaleMode, setCurrentScaleMode] = useState<ScaleMode>('random');
   const [currentRandomProgression, setCurrentRandomProgression] = useState<string[][]>([]);
   const [currentRandomMelody, setCurrentRandomMelody] = useState<string[]>([]);
+  const [isArpeggiatorOn, setIsArpeggiatorOn] = useState(false);
+  const [currentDrumPatternIndex, setCurrentDrumPatternIndex] = useState(0);
 
-  const synthRef = useRef<Tone.PolySynth | null>(null);
-  const bassSynthRef = useRef<Tone.Synth | null>(null);
+  const synthRef = useRef<Tone.PolySynth | Tone.MonoSynth | null>(null);
+  const bassSynthRef = useRef<Tone.Synth | Tone.FMSynth | null>(null);
   const kickSynthRef = useRef<Tone.MembraneSynth | null>(null);
   const snareSynthRef = useRef<Tone.NoiseSynth | null>(null);
-  const hihatSynthRef = useRef<Tone.MetalSynth | null>(null);
+  const hihatSynthRef = useRef<Tone.NoiseSynth | Tone.MetalSynth | null>(null);
   const analyserRef = useRef<Tone.Analyser | null>(null);
+  const reverbRef = useRef<Tone.Reverb | null>(null);
+  const delayRef = useRef<Tone.FeedbackDelay | null>(null);
+  const chorusRef = useRef<Tone.Chorus | null>(null);
   const waveformCanvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameId = useRef<number | null>(null);
   const sequenceRef = useRef<Tone.Sequence | null>(null);
+  const chiptuneMelodyNoteRef = useRef<string | null>(null);
 
   // Manual sequencer state
   const notesForManualSequence = ['C5', 'B4', 'A4', 'G4', 'F4', 'E4', 'D4', 'C4'];
@@ -254,62 +175,103 @@ const App: React.FC = () => {
 
   // --- Initialization of Tone.js Components ---
   useEffect(() => {
-    // Synth for melody and chords (PolySynth for multiple notes)
-    synthRef.current = new Tone.PolySynth(Tone.Synth, {
-      oscillator: { type: currentWaveform },
-      envelope: {
-        attack: 0.005,
-        decay: 0.1,
-        sustain: 0.3,
-        release: 1,
-      },
-    }).toDestination();
+    // --- 1. Clean up only the instruments, not the persistent effects ---
+    synthRef.current?.dispose();
+    bassSynthRef.current?.dispose();
+    kickSynthRef.current?.dispose();
+    snareSynthRef.current?.dispose();
+    hihatSynthRef.current?.dispose();
 
-    // Synth for bass notes
-    bassSynthRef.current = new Tone.Synth({
-      oscillator: { type: 'sine' },
-      envelope: {
-        attack: 0.01,
-        decay: 0.4,
-        sustain: 0.5,
-        release: 1.5,
-      },
-    }).toDestination();
+    // --- 2. Initialize global effects and analyser ONCE ---
+    if (!reverbRef.current) reverbRef.current = new Tone.Reverb({ decay: 2, wet: 0 }).toDestination();
+    if (!delayRef.current) delayRef.current = new Tone.FeedbackDelay({ delayTime: "8n", feedback: 0.5, wet: 0 }).toDestination();
+    if (!chorusRef.current) chorusRef.current = new Tone.Chorus(4, 2.5, 0.7).toDestination();
+    if (!analyserRef.current) {
+      analyserRef.current = new Tone.Analyser('waveform', 2048);
+      Tone.Destination.connect(analyserRef.current);
+    }
+    
+    // --- 3. Reset effect levels before setting up new palette ---
+    reverbRef.current.wet.value = 0;
+    delayRef.current.wet.value = 0;
+    chorusRef.current.wet.value = 0;
+    
+    // --- 4. Setup synths based on the selected palette ---
+    switch (soundPalette) {
+        case 'Synthwave':
+            chorusRef.current.wet.value = 0.5;
+            reverbRef.current.wet.value = 0.2;
+            synthRef.current = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: 'sawtooth' },
+                envelope: { attack: 0.01, decay: 0.5, sustain: 0.2, release: 0.8 }
+            }).chain(chorusRef.current, reverbRef.current);
+            bassSynthRef.current = new Tone.FMSynth({
+                harmonicity: 0.5,
+                envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 1 }
+            }).toDestination();
+            break;
+        case 'Acid':
+            synthRef.current = new Tone.MonoSynth({
+                oscillator: { type: 'sawtooth' },
+                filter: { type: 'lowpass', rolloff: -24, Q: 8 },
+                filterEnvelope: { attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.5, baseFrequency: 200, octaves: 3 }
+            }).toDestination();
+            bassSynthRef.current = new Tone.Synth({
+                oscillator: { type: 'square' },
+                envelope: { attack: 0.01, decay: 0.3, sustain: 0.2, release: 0.5 }
+            }).toDestination();
+            break;
+        case 'FM Bells':
+            delayRef.current.wet.value = 0.4;
+            synthRef.current = new Tone.PolySynth(Tone.FMSynth, {
+                harmonicity: 3,
+                modulationIndex: 15,
+                envelope: { attack: 0.01, decay: 0.5, sustain: 0, release: 1.5 }
+            }).connect(delayRef.current);
+            bassSynthRef.current = new Tone.FMSynth({
+                harmonicity: 0.5,
+                envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 1 }
+            }).toDestination();
+            break;
+        case 'Chiptune':
+            synthRef.current = new Tone.PolySynth(Tone.Synth, {
+                volume: -12, 
+                oscillator: { type: 'square' },
+                envelope: { attack: 0.001, decay: 0.05, sustain: 1, release: 0.1 }, 
+            }).toDestination();
+            bassSynthRef.current = new Tone.Synth({
+                volume: -10,
+                oscillator: { type: 'triangle' },
+                envelope: { attack: 0.001, decay: 0.3, sustain: 0.2, release: 0.5 },
+            }).toDestination();
+            break;
+        default: // For sawtooth, square, sine, triangle
+            synthRef.current = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: soundPalette },
+                envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 },
+            }).toDestination();
+            bassSynthRef.current = new Tone.Synth({
+                oscillator: { type: 'sine' },
+                envelope: { attack: 0.01, decay: 0.4, sustain: 0.5, release: 1.5 },
+            }).toDestination();
+            break;
+    }
 
-    // Drum synths
-    kickSynthRef.current = new Tone.MembraneSynth({
-      octaves: 5,
-      pitchDecay: 0.05,
-      envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.7 },
-    }).toDestination();
-
-    snareSynthRef.current = new Tone.NoiseSynth({
-      noise: { type: 'white' },
-      envelope: { attack: 0.001, decay: 0.2, sustain: 0 },
-    }).toDestination();
-
-    hihatSynthRef.current = new Tone.MetalSynth({
-      //frequency: 200,
-      envelope: { attack: 0.001, decay: 0.1, release: 0.05 },
-      harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1,
-    }).toDestination();
-
-    // Analyser for waveform visualization
-    analyserRef.current = new Tone.Analyser('waveform', 2048);
-    // Connect the analyser to the master output
-    Tone.Destination.connect(analyserRef.current);
-
+    // --- 5. Setup drums (consistent across most palettes) ---
+    if (soundPalette === 'Chiptune') {
+        kickSynthRef.current = new Tone.MembraneSynth({ pitchDecay: 0.02, octaves: 4, envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.2 } }).toDestination();
+        snareSynthRef.current = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.15, sustain: 0 } }).toDestination();
+        hihatSynthRef.current = new Tone.NoiseSynth({ noise: { type: 'white' }, filter: { type: 'highpass', Q: 1, frequency: 8000 }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.05 } }).toDestination();
+    } else {
+        kickSynthRef.current = new Tone.MembraneSynth({ octaves: 5, pitchDecay: 0.05, envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.7 } }).toDestination();
+        snareSynthRef.current = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.2, sustain: 0 } }).toDestination();
+        hihatSynthRef.current = new Tone.MetalSynth({ envelope: { attack: 0.001, decay: 0.1, release: 0.05 }, harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1 }).toDestination();
+    }
+    
     return () => {
-      // Clean up Tone.js components
-      synthRef.current?.dispose();
-      bassSynthRef.current?.dispose();
-      kickSynthRef.current?.dispose();
-      snareSynthRef.current?.dispose();
-      hihatSynthRef.current?.dispose();
-      analyserRef.current?.dispose();
-      sequenceRef.current?.dispose();
+        sequenceRef.current?.dispose();
     };
-  }, [currentWaveform]);
+  }, [soundPalette]);
 
   // --- Update Master Volume ---
   useEffect(() => {
@@ -348,28 +310,22 @@ const App: React.FC = () => {
       animationFrameId.current = null;
       return;
     }
-
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       animationFrameId.current = null;
       return;
     }
-
     const dataArray = analyserRef.current.getValue();
     const bufferLength = dataArray.length;
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#6366f1'; // Indigo 500
     ctx.beginPath();
-
     const sliceWidth = canvas.width * 1.0 / bufferLength;
     let x = 0;
-
     for (let i = 0; i < bufferLength; i++) {
       const v = dataArray[i] as number;
       const y = (v * (canvas.height / 2)) + (canvas.height / 2);
-
       if (i === 0) {
         ctx.moveTo(x, y);
       } else {
@@ -377,10 +333,8 @@ const App: React.FC = () => {
       }
       x += sliceWidth;
     }
-
     ctx.lineTo(canvas.width, canvas.height / 2);
     ctx.stroke();
-
     animationFrameId.current = requestAnimationFrame(drawWaveform);
   }, []);
 
@@ -460,38 +414,68 @@ const App: React.FC = () => {
     }
 
     const steps = Array(16).fill(0).map((_, i) => i);
+    const currentPattern = drumPatterns[currentDrumPatternIndex];
 
     sequenceRef.current = new Tone.Sequence((time, step) => {
       setCurrentStep(step);
 
-      if (activeMode === 'random') {
+      if (activeMode === 'random' && currentRandomProgression.length > 0) {
         const chordIndex = Math.floor(step / 4) % currentRandomProgression.length;
         const currentChord = currentRandomProgression[chordIndex];
         const scale = SCALES[randomKey];
         const octaveRange = { min: 4, max: 5 };
 
-        if (playbackMode === 'loop') {
-          const melodyNote = currentRandomMelody[step];
-          if (melodyNote && synthRef.current) {
-            synthRef.current.triggerAttackRelease(melodyNote, '8n', time);
-          }
+        // --- Melody Logic ---
+        let melodyNote: string | null = null;
+        if (playbackMode === 'loop' && currentRandomMelody.length > 0) {
+            melodyNote = currentRandomMelody[step];
         } else if (playbackMode === 'song') {
-          if (currentChord && synthRef.current) {
-            const dynamicMelodyNote = generateConsistentMelodyNote(scale, currentChord, octaveRange);
-            synthRef.current.triggerAttackRelease(dynamicMelodyNote, '8n', time);
-          }
+            melodyNote = generateConsistentMelodyNote(scale, currentChord, octaveRange);
         }
 
+        if (soundPalette === 'Chiptune' && synthRef.current) {
+            if (chiptuneMelodyNoteRef.current) {
+                synthRef.current.triggerRelease(chiptuneMelodyNoteRef.current, time);
+            }
+            if (melodyNote) {
+                synthRef.current.triggerAttack(melodyNote, time);
+                chiptuneMelodyNoteRef.current = melodyNote;
+            } else {
+                chiptuneMelodyNoteRef.current = null;
+            }
+        } else {
+            if (melodyNote && synthRef.current) {
+                synthRef.current.triggerAttackRelease(melodyNote, '8n', time);
+            }
+        }
+
+        // --- Bassline & Chords ---
         if (currentChord && step % 4 === 0 && bassSynthRef.current) {
           const bassNote = `${currentChord[0].slice(0, -1)}2`;
           bassSynthRef.current.triggerAttackRelease(bassNote, '2n', time);
         }
 
         if (currentChord && (step % 8 === 0) && synthRef.current) {
-          synthRef.current.triggerAttackRelease(currentChord, '4n', time);
+           if (isArpeggiatorOn && soundPalette !== 'Acid') { 
+            const arpDuration = '16n';
+            const chordNotes = Array.isArray(currentChord) ? currentChord : [currentChord];
+            chordNotes.forEach((note, index) => {
+                const noteTime = Tone.Time(time).toSeconds() + (Tone.Time(arpDuration).toSeconds() * index);
+                if (noteTime >= Tone.Transport.seconds) {
+                    synthRef.current?.triggerAttackRelease(note, arpDuration, noteTime);
+                }
+            });
+           } else {
+             if (soundPalette === 'Acid') {
+                const rootNote = Array.isArray(currentChord) ? currentChord[0] : currentChord;
+                synthRef.current.triggerAttackRelease(rootNote, '4n', time);
+             } else {
+                synthRef.current.triggerAttackRelease(currentChord, '4n', time);
+             }
+           }
         }
 
-      } else { // Manual mode
+      } else if (activeMode === 'manual') { // Manual mode
         notesForManualSequence.forEach((note, noteIndex) => {
           if (manualSequence[noteIndex][step] && synthRef.current) {
             synthRef.current.triggerAttackRelease(note, '8n', time);
@@ -499,16 +483,10 @@ const App: React.FC = () => {
         });
       }
 
-      // Drum pattern (common for both modes for now)
-      if (kickSynthRef.current) {
-        if (step % 4 === 0) kickSynthRef.current.triggerAttackRelease('C1', '8n', time);
-      }
-      if (hihatSynthRef.current) {
-        if (step % 2 === 0) hihatSynthRef.current.triggerAttackRelease('8n', time);
-      }
-      if (snareSynthRef.current) {
-        if (step % 4 === 2) snareSynthRef.current.triggerAttackRelease('8n', time);
-      }
+      // Drum pattern logic
+      if (kickSynthRef.current && currentPattern.kick[step]) kickSynthRef.current.triggerAttackRelease('C1', '8n', time);
+      if (hihatSynthRef.current && currentPattern.hihat[step]) hihatSynthRef.current.triggerAttackRelease('8n', time);
+      if (snareSynthRef.current && currentPattern.snare[step]) snareSynthRef.current.triggerAttackRelease('8n', time);
 
     }, steps, '16n');
 
@@ -523,19 +501,15 @@ const App: React.FC = () => {
       Tone.Transport.pause();
       setCurrentStep(0);
     }
-  }, [isPlaying, activeMode, manualSequence, currentRandomMelody, currentRandomProgression, randomKey, playbackMode, currentWaveform]);
+  }, [isPlaying, activeMode, manualSequence, currentRandomMelody, currentRandomProgression, randomKey, playbackMode, soundPalette, isArpeggiatorOn, currentDrumPatternIndex]);
 
   useEffect(() => {
     setupSequence();
-
     return () => {
-      if (sequenceRef.current) {
-        sequenceRef.current.dispose();
-        sequenceRef.current = null;
-      }
+      sequenceRef.current?.dispose();
       setCurrentStep(0);
     };
-  }, [isPlaying, activeMode, manualSequence, currentRandomMelody, currentRandomProgression, randomKey, playbackMode, setupSequence, currentWaveform]);
+  }, [isPlaying, activeMode, manualSequence, currentRandomMelody, currentRandomProgression, randomKey, playbackMode, setupSequence, soundPalette, isArpeggiatorOn, currentDrumPatternIndex]);
 
 
   // --- Event Handlers ---
@@ -545,14 +519,33 @@ const App: React.FC = () => {
       setIsPlaying(true);
     } else {
       setIsPlaying(false);
+      if (synthRef.current && typeof (synthRef.current as any).releaseAll === 'function') {
+        (synthRef.current as any).releaseAll();
+      }
+      chiptuneMelodyNoteRef.current = null;
     }
   };
 
-  const handleWaveformChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newWaveform = e.target.value as Waveform;
-    setCurrentWaveform(newWaveform);
+  const handlePaletteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (synthRef.current && typeof (synthRef.current as any).releaseAll === 'function') {
+      (synthRef.current as any).releaseAll();
+    }
+    chiptuneMelodyNoteRef.current = null;
+    
+    const newPalette = e.target.value as SoundPalette;
+    setSoundPalette(newPalette);
+
+    const newPatternIndex = drumPatterns.findIndex(p => p.name === newPalette);
+    if (newPatternIndex !== -1) {
+        setCurrentDrumPatternIndex(newPatternIndex);
+    }
   };
 
+  const handleRandomizeDrums = () => {
+    // FIX: Only change the drum pattern index, not the sound palette.
+    setCurrentDrumPatternIndex(Math.floor(Math.random() * drumPatterns.length));
+  };
+  
   const handleTempoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTempo = parseInt(e.target.value);
     setTempo(newTempo);
@@ -582,15 +575,15 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-inter p-4 flex flex-col items-center justify-center">
-      <div className="w-full max-w-4xl bg-gray-800 rounded-xl shadow-lg p-6 space-y-6">
+      <div className="w-full max-w-6xl bg-gray-800 rounded-xl shadow-lg p-6 space-y-6">
         <h1 className="text-4xl font-bold text-center text-indigo-400 mb-2">
-          BeatRX Keygen Music Generator
+          BeatRX K-GEN Music Generator
         </h1>
         <p className="text-sm text-gray-400 text-center mb-6">Create unique procedural music</p>
 
         {/* Controls Section */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4"> {/* Group Play/Pause and Randomize button */}
+          <div className="flex items-center gap-4">
             <button
               onClick={handlePlayPause}
               className="flex items-center justify-center p-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-full shadow-md transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 w-auto"
@@ -599,22 +592,28 @@ const App: React.FC = () => {
               {isPlaying ? <LucidePause className="w-5 h-5" /> : <LucidePlay className="w-5 h-5" />}
             </button>
             {activeMode === 'random' && (
-              <button
-                onClick={generateRandomMusicData}
-                className="flex items-center justify-center p-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 w-auto"
-                aria-label="Randomize Melody"
-              >
-                <LucideShuffle className="w-5 h-5" />
-              </button>
+              <>
+                <button
+                    onClick={generateRandomMusicData}
+                    className="flex items-center justify-center p-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 w-auto"
+                    aria-label="Randomize Melody"
+                >
+                    <LucideShuffle className="w-5 h-5" />
+                </button>
+                <button
+                    onClick={handleRandomizeDrums}
+                    className="flex items-center justify-center p-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 w-auto"
+                    aria-label="Randomize Drums"
+                >
+                    <LucideDrum className="w-5 h-5" />
+                </button>
+              </>
             )}
           </div>
 
 
           {/* This div contains ALL other controls */}
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-4 mt-4 md:mt-0 flex-grow">
-
-            {/* Mode select */}
-            <label htmlFor="mode-select" className="sr-only">Mode</label>
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 mt-4 md:mt-0 flex-grow">
             <select
               id="mode-select"
               value={activeMode}
@@ -625,23 +624,19 @@ const App: React.FC = () => {
               <option value="manual">Manual</option>
             </select>
 
-            {/* Waveform select */}
-            <label htmlFor="waveform-select" className="sr-only">Waveform</label>
             <select
-              id="waveform-select"
-              value={currentWaveform}
-              onChange={handleWaveformChange}
+              id="palette-select"
+              value={soundPalette}
+              onChange={handlePaletteChange}
               className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm flex-grow sm:flex-grow-0"
             >
-              {waveforms.map((wf) => (
-                <option key={wf} value={wf}>{wf.charAt(0).toUpperCase() + wf.slice(1)}</option>
+              {soundPalettes.map((p) => (
+                <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
               ))}
             </select>
 
             {activeMode === 'random' && (
               <>
-                {/* Playback Mode select */}
-                <label htmlFor="playback-mode-select" className="sr-only">Playback Mode</label>
                 <select
                   id="playback-mode-select"
                   value={playbackMode}
@@ -652,8 +647,6 @@ const App: React.FC = () => {
                   <option value="song">Song (Continuous)</option>
                 </select>
 
-                {/* Key Selector */}
-                <label htmlFor="key-select" className="sr-only">Key</label>
                 <select
                   id="key-select"
                   value={currentRootKey}
@@ -666,8 +659,6 @@ const App: React.FC = () => {
                   ))}
                 </select>
 
-                {/* Scale Mode Selector */}
-                <label htmlFor="scale-mode-select" className="sr-only">Scale Mode</label>
                 <select
                   id="scale-mode-select"
                   value={currentScaleMode}
@@ -679,6 +670,17 @@ const App: React.FC = () => {
                   <option value="minor">Minor</option>
                   <option value="harmonic_minor">H. Minor</option>
                 </select>
+                
+                <div className="flex items-center justify-center bg-gray-700 border border-gray-600 rounded-lg px-3 py-1.5">
+                    <label htmlFor="arp-toggle" className="text-sm font-medium text-white mr-2">Arp</label>
+                    <input
+                        id="arp-toggle"
+                        type="checkbox"
+                        checked={isArpeggiatorOn}
+                        onChange={e => setIsArpeggiatorOn(e.target.checked)}
+                        className="w-4 h-4 text-indigo-600 bg-gray-600 border-gray-500 rounded focus:ring-indigo-500"
+                    />
+                </div>
               </>
             )}
           </div>
@@ -686,7 +688,6 @@ const App: React.FC = () => {
 
         {/* Sliders for Tempo and Volume */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 items-center">
-          {/* Tempo Slider */}
           <div className="flex items-center w-full gap-2">
             <label htmlFor="tempo-slider" className="text-lg font-medium text-gray-300 min-w-[100px]">
               Tempo: {tempo} BPM
@@ -702,7 +703,6 @@ const App: React.FC = () => {
             />
           </div>
 
-          {/* Volume Slider */}
           <div className="flex items-center w-full gap-2">
             <label htmlFor="volume-slider" className="text-lg font-medium text-gray-300 min-w-[100px]">
               Volume: {isMuted ? 'Muted' : `${volume} dB`}
@@ -741,24 +741,18 @@ const App: React.FC = () => {
             </div>
 
             <div className="overflow-x-auto p-2 bg-gray-700 rounded-lg shadow-inner">
-              {/* Main grid for sequencer, including header row for numbers */}
               <div className="grid gap-1 pb-1" style={{ gridTemplateColumns: `auto repeat(${16}, minmax(0, 1fr))` }}>
-                {/* Empty cell for the first column of the header (aligns with note labels) */}
                 <div></div>
-                {/* Header numbers for steps */}
                 {Array(16).fill(0).map((_, i) => (
                   <div key={`step-header-${i}`} className={`w-6 h-6 flex items-center justify-center text-xs font-mono rounded-sm ${currentStep === i ? 'bg-indigo-600 text-white' : 'text-gray-400'}`}>
                     {i + 1}
                   </div>
                 ))}
-                {/* Note rows */}
                 {notesForManualSequence.map((note, noteIndex) => (
                   <React.Fragment key={`note-row-${noteIndex}`}>
-                    {/* Note label column */}
                     <div className="text-right pr-2 py-1 text-sm font-semibold text-gray-300 flex items-center justify-end">
                       {note}
                     </div>
-                    {/* Sequencer buttons */}
                     {manualSequence[noteIndex].map((isActive, stepIndex) => (
                       <button
                         key={`cell-${noteIndex}-${stepIndex}`}
@@ -782,7 +776,7 @@ const App: React.FC = () => {
         {showManualGuide && (
           <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
             <div className="bg-gray-800 rounded-xl p-6 max-w-lg w-full shadow-lg">
-              <h3 className="2xl font-bold text-indigo-400 mb-4">Manual Mode Guide</h3>
+              <h3 className="text-2xl font-bold text-indigo-400 mb-4">Manual Mode Guide</h3>
               <p className="text-gray-300 mb-4">
                 In **Manual Mode**, you can compose your own 16-step melody!
                 The grid represents musical notes (rows) over time (columns, 1 to 16 steps).
@@ -819,7 +813,7 @@ const App: React.FC = () => {
 
         {/* Waveform Visualization */}
         <div className="mt-8">
-          <h2 className="2xl font-semibold text-indigo-300 mb-4 text-center">Real-time Waveform</h2>
+          <h2 className="text-2xl font-semibold text-indigo-300 mb-4 text-center">Real-time Waveform</h2>
           <div className="bg-gray-700 rounded-lg p-2 shadow-inner">
             <canvas ref={waveformCanvasRef} className="w-full h-48 bg-gray-900 rounded-md border border-gray-600"></canvas>
           </div>
@@ -835,4 +829,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-
