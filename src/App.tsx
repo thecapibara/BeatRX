@@ -261,7 +261,14 @@ const App: React.FC = () => {
     if (soundPalette === 'Chiptune') {
         kickSynthRef.current = new Tone.MembraneSynth({ pitchDecay: 0.02, octaves: 4, envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.2 } }).toDestination();
         snareSynthRef.current = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.15, sustain: 0 } }).toDestination();
-        hihatSynthRef.current = new Tone.NoiseSynth({ noise: { type: 'white' }, filter: { type: 'highpass', Q: 1, frequency: 8000 }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.05 } }).toDestination();
+        
+        // FIX: Create filter separately and connect to it
+        const hihatFilter = new Tone.Filter(8000, "highpass").toDestination();
+        hihatSynthRef.current = new Tone.NoiseSynth({
+            noise: { type: 'white' },
+            envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.05 }
+        }).connect(hihatFilter);
+
     } else {
         kickSynthRef.current = new Tone.MembraneSynth({ octaves: 5, pitchDecay: 0.05, envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.7 } }).toDestination();
         snareSynthRef.current = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.2, sustain: 0 } }).toDestination();
@@ -433,7 +440,7 @@ const App: React.FC = () => {
             melodyNote = generateConsistentMelodyNote(scale, currentChord, octaveRange);
         }
 
-        if (soundPalette === 'Chiptune' && synthRef.current) {
+        if (soundPalette === 'Chiptune' && synthRef.current instanceof Tone.PolySynth) {
             if (chiptuneMelodyNoteRef.current) {
                 synthRef.current.triggerRelease(chiptuneMelodyNoteRef.current, time);
             }
@@ -456,7 +463,7 @@ const App: React.FC = () => {
         }
 
         if (currentChord && (step % 8 === 0) && synthRef.current) {
-           if (isArpeggiatorOn && soundPalette !== 'Acid') { 
+           if (isArpeggiatorOn && synthRef.current instanceof Tone.PolySynth) { 
             const arpDuration = '16n';
             const chordNotes = Array.isArray(currentChord) ? currentChord : [currentChord];
             chordNotes.forEach((note, index) => {
@@ -466,11 +473,12 @@ const App: React.FC = () => {
                 }
             });
            } else {
-             if (soundPalette === 'Acid') {
+             // FIX: Use type guards for safe chord/note handling
+             if (synthRef.current instanceof Tone.PolySynth) {
+                synthRef.current.triggerAttackRelease(currentChord, '4n', time);
+             } else if (synthRef.current instanceof Tone.MonoSynth) {
                 const rootNote = Array.isArray(currentChord) ? currentChord[0] : currentChord;
                 synthRef.current.triggerAttackRelease(rootNote, '4n', time);
-             } else {
-                synthRef.current.triggerAttackRelease(currentChord, '4n', time);
              }
            }
         }
@@ -519,16 +527,18 @@ const App: React.FC = () => {
       setIsPlaying(true);
     } else {
       setIsPlaying(false);
-      if (synthRef.current && typeof (synthRef.current as any).releaseAll === 'function') {
-        (synthRef.current as any).releaseAll();
+      // FIX: Use type guard for safe releaseAll call
+      if (synthRef.current instanceof Tone.PolySynth) {
+        synthRef.current.releaseAll();
       }
       chiptuneMelodyNoteRef.current = null;
     }
   };
 
   const handlePaletteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (synthRef.current && typeof (synthRef.current as any).releaseAll === 'function') {
-      (synthRef.current as any).releaseAll();
+    // FIX: Use type guard for safe releaseAll call
+    if (synthRef.current instanceof Tone.PolySynth) {
+        synthRef.current.releaseAll();
     }
     chiptuneMelodyNoteRef.current = null;
     
@@ -542,7 +552,6 @@ const App: React.FC = () => {
   };
 
   const handleRandomizeDrums = () => {
-    // FIX: Only change the drum pattern index, not the sound palette.
     setCurrentDrumPatternIndex(Math.floor(Math.random() * drumPatterns.length));
   };
   
@@ -577,7 +586,7 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-gray-900 text-gray-100 font-inter p-4 flex flex-col items-center justify-center">
       <div className="w-full max-w-6xl bg-gray-800 rounded-xl shadow-lg p-6 space-y-6">
         <h1 className="text-4xl font-bold text-center text-indigo-400 mb-2">
-          BeatRX K-GEN Music Generator
+          BeatRX Keygen Music Generator
         </h1>
         <p className="text-sm text-gray-400 text-center mb-6">Create unique procedural music</p>
 
