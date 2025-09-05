@@ -586,7 +586,7 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-gray-900 text-gray-100 font-inter p-4 flex flex-col items-center justify-center">
       <div className="w-full max-w-6xl bg-gray-800 rounded-xl shadow-lg p-6 space-y-6">
         <h1 className="text-4xl font-bold text-center text-indigo-400 mb-2">
-          BeatRX Keygen Music Generator
+          BeatRX K-GEN Music Generator
         </h1>
         <p className="text-sm text-gray-400 text-center mb-6">Create unique procedural music</p>
 
