@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as Tone from 'tone';
-import './Piano.css';
+import './Piano.css'; 
 
 const Piano: React.FC = () => {
     const monsterStageRef = useRef<HTMLDivElement>(null);
@@ -48,7 +48,7 @@ const Piano: React.FC = () => {
         if (keyCode === 'Equal') return '=';
         if (keyCode === 'Backslash') return '\\';
         if (keyCode === 'Backspace') return '⌫';
-        return ''; 
+        return '';
     };
 
     useEffect(() => {
@@ -72,13 +72,17 @@ const Piano: React.FC = () => {
             if (vibratoRef.current) vibratoRef.current.dispose();
 
             const config = synthOptions[type as keyof typeof synthOptions];
+            
             if (type === 'keygenNostalgia') {
                 vibratoRef.current = new Tone.Vibrato({ frequency: 5, depth: 0.05, type: 'square' }).toDestination();
-                synthRef.current = new Tone.PolySynth(config.synth, config.options).connect(vibratoRef.current);
+                synthRef.current = new Tone.PolySynth(config.synth as any, config.options).connect(vibratoRef.current);
             } else {
-                synthRef.current = new Tone.PolySynth(config.synth, config.options).toDestination();
+                synthRef.current = new Tone.PolySynth(config.synth as any, config.options).toDestination();
             }
-            synthRef.current.maxPolyphony = 12;
+
+            if(synthRef.current) {
+                synthRef.current.maxPolyphony = 12;
+            }
         };
 
         createSynth(selectedSound);
