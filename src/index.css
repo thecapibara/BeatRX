@@ -1,3 +1,70 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --bg-main: #111827; /* bg-gray-900 */
+  --bg-ui: #1f2937; /* bg-gray-800 */
+  --bg-control: #374151; /* bg-gray-700 */
+  --bg-waveform: #111827; /* bg-gray-900 */
+  --border-color: #4b5563; /* border-gray-600 */
+  
+  --text-primary: #f9fafb; /* text-gray-100 */
+  --text-secondary: #9ca3af; /* text-gray-400 */
+  --text-accent: #818cf8; /* text-indigo-400 */
+
+  --accent-color: #6366f1; /* indigo-500 */
+  --accent-hover: #4f46e5; /* indigo-700 */
+  
+  /* Кольори для піаніно */
+  --bg-piano-container: #2d3436;
+  --bg-monster-stage: #1e2124;
+  --border-monster-stage: #4a5568;
+  --text-piano-label: #6c757d;
+  --text-piano-label-black: #f8f9fa;
+  --bg-piano-select: #4a5568;
+}
+
+[data-theme="light"] {
+  --bg-main: #f3f4f6; /* bg-gray-100 */
+  --bg-ui: #ffffff; /* bg-white */
+  --bg-control: #f9fafb; /* bg-gray-50 */
+  --bg-waveform: #e5e7eb; /* bg-gray-200 */
+  --border-color: #d1d5db; /* border-gray-300 */
+
+  --text-primary: #111827; /* text-gray-900 */
+  --text-secondary: #6b7280; /* text-gray-500 */
+  --text-accent: #4f46e5; /* text-indigo-600 */
+
+  --accent-color: #6366f1;
+  --accent-hover: #4338ca;
+  
+  --bg-piano-container: #d1d5db;
+  --bg-monster-stage: #e5e7eb;
+  --border-monster-stage: #9ca3af;
+  --text-piano-label: #4b5563;
+  --text-piano-label-black: #f8f9fa;
+  --bg-piano-select: #9ca3af;
+}
+
+[data-theme="branded"] {
+  --bg-main: #000000; /* black */
+  --bg-ui: #1c1c1c; /* very dark gray */
+  --bg-control: #2d2d2d;
+  --bg-waveform: #0d0d0d;
+  --border-color: #444444;
+
+  --text-primary: #e75480; /* Dark Pink */
+  --text-secondary: #a13a5a;
+  --text-accent: #ff8fab; /* Lighter Pink */
+
+  --accent-color: #e75480;
+  --accent-hover: #c44069;
+  
+  --bg-piano-container: #1a1a1a;
+  --bg-monster-stage: #101010;
+  --border-monster-stage: #e75480;
+  --text-piano-label: #a13a5a;
+  --text-piano-label-black: #f8f9fa;
+  --bg-piano-select: #e75480;
+}
