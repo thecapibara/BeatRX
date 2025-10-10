@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as Tone from 'tone';
-import { Play as LucidePlay, Pause as LucidePause, Shuffle as LucideShuffle, Volume2 as LucideVolume2, VolumeX as LucideVolumeX, Info as LucideInfo, Drum as LucideDrum, Music as LucideMusic, Piano as LucidePiano } from 'lucide-react';
+import { Play as LucidePlay, Pause as LucidePause, Shuffle as LucideShuffle, Volume2 as LucideVolume2, VolumeX as LucideVolumeX, Info as LucideInfo, Drum as LucideDrum, Music as LucideMusic, Piano as LucidePiano, Wand2 as LucideWand2, Sun as LucideSun, Moon as LucideMoon, Flame as LucideFlame } from 'lucide-react';
 import Piano from './components/Piano';
 
 const noteToMidi = (note: string): number => Tone.Midi(note).toMidi();
@@ -32,28 +32,7 @@ const soundPalettes = ['sawtooth', 'square', 'sine', 'triangle', 'Chiptune', 'Sy
 type SoundPalette = typeof soundPalettes[number];
 const drumPatterns = [ { name: 'House', kick: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0], }, { name: 'Breakbeat', kick: [1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0], snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], }, { name: 'Trap', kick: [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0], snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1], }, { name: 'Minimal', kick: [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], snare: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0], }, { name: 'Synthwave', kick: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0], }, ];
 const SCALES = { 'C_major': ['C', 'D', 'E', 'F', 'G', 'A', 'B'], 'G_major': ['G', 'A', 'B', 'C', 'D', 'E', 'F#'], 'D_major': ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'], 'E_major': ['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#'], 'A_major': ['A', 'B', 'C#', 'D', 'E', 'F#', 'G#'], 'B_major': ['B', 'C#', 'D#', 'E', 'F#', 'G#', 'A#'], 'C_minor': ['C', 'D', 'Eb', 'F', 'G', 'Ab', 'Bb'], 'G_minor': ['G', 'A', 'Bb', 'C', 'D', 'Eb', 'F'], 'D_minor': ['D', 'E', 'F', 'G', 'A', 'Bb', 'C'], 'E_minor': ['E', 'F#', 'G', 'A', 'B', 'C', 'D'], 'A_minor': ['A', 'B', 'C', 'D', 'E', 'F', 'G'], 'B_minor': ['B', 'C#', 'D', 'E', 'F#', 'G', 'A'], 'C_harmonic_minor': ['C', 'D', 'Eb', 'F', 'G', 'Ab', 'B'], 'G_harmonic_minor': ['G', 'A', 'Bb', 'C', 'D', 'Eb', 'F#'], 'D_harmonic_minor': ['D', 'E', 'F', 'G', 'A', 'Bb', 'C#'], 'E_harmonic_minor': ['E', 'F#', 'G', 'A', 'B', 'C', 'D#'], 'A_harmonic_minor': ['A', 'B', 'C', 'D', 'E', 'F', 'G#'], 'B_harmonic_minor': ['B', 'C#', 'D', 'E', 'F#', 'G', 'A#'], };
-
-const CHORD_PROGRESSIONS_DEFINITIONS = {
-  'C_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }],
-  'G_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }],
-  'D_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }],
-  'A_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }],
-  'E_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }],
-  'B_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }],
-  'C_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }],
-  'G_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }],
-  'D_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }],
-  'A_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }],
-  'E_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }],
-  'B_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }],
-  'C_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }],
-  'G_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }],
-  'D_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }],
-  'A_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }],
-  'E_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }],
-  'B_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }],
-} as const;
-
+const CHORD_PROGRESSIONS_DEFINITIONS = { 'C_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }], 'G_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }], 'D_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }], 'A_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }], 'E_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }], 'B_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }], 'C_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'G_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'D_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'A_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'E_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'B_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'C_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'G_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'D_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'A_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'E_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'B_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], } as const;
 const ALL_KEYS = [ 'C_major', 'G_major', 'D_major', 'E_major', 'A_major', 'B_major', 'C_minor', 'G_minor', 'D_minor', 'E_minor', 'A_minor', 'B_minor', 'C_harmonic_minor', 'G_harmonic_minor', 'D_harmonic_minor', 'E_harmonic_minor', 'A_harmonic_minor', 'B_harmonic_minor', ] as const;
 type AllKey = typeof ALL_KEYS[number];
 const ROOT_NOTES = ['C', 'D', 'E', 'G', 'A', 'B'] as const;
@@ -63,10 +42,11 @@ type ScaleMode = 'major' | 'minor' | 'harmonic_minor' | 'random';
 type RootKeyOption = RootNote | 'random';
 
 type AppMode = 'beatrx' | 'piano';
+type Theme = 'light' | 'dark' | 'branded';
 
 const App: React.FC = () => {
   const [appMode, setAppMode] = useState<AppMode>('beatrx');
-
+  const [theme, setTheme] = useState<Theme>('dark');
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeMode, setActiveMode] = useState<'random' | 'manual'>('random');
   const [soundPalette, setSoundPalette] = useState<SoundPalette>('sawtooth');
@@ -102,6 +82,10 @@ const App: React.FC = () => {
   const sequenceRef = useRef<Tone.Sequence | null>(null);
   const chiptuneMelodyNoteRef = useRef<string | null>(null);
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+  
   useEffect(() => {
     if (appMode === 'piano' && isPlaying) {
       setIsPlaying(false);
@@ -187,7 +171,9 @@ const App: React.FC = () => {
     const canvas = waveformCanvasRef.current; if (!canvas || !analyserRef.current) { animationFrameId.current = null; return; }
     const ctx = canvas.getContext('2d'); if (!ctx) { animationFrameId.current = null; return; }
     const dataArray = analyserRef.current.getValue(); const bufferLength = dataArray.length;
-    ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.lineWidth = 2; ctx.strokeStyle = '#6366f1'; ctx.beginPath();
+    ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.lineWidth = 2;
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#6366f1';
+    ctx.beginPath();
     const sliceWidth = canvas.width * 1.0 / bufferLength; let x = 0;
     for (let i = 0; i < bufferLength; i++) {
       const v = dataArray[i] as number; const y = (v * (canvas.height / 2)) + (canvas.height / 2);
@@ -313,8 +299,25 @@ const App: React.FC = () => {
     const newPatternIndex = drumPatterns.findIndex(p => p.name === newPalette);
     if (newPatternIndex !== -1) { setCurrentDrumPatternIndex(newPatternIndex); }
   };
+  
+  const handleCycleDrums = () => {
+    setCurrentDrumPatternIndex(prevIndex => (prevIndex + 1) % drumPatterns.length);
+  };
+  
+  const handleEvolve = () => {
+    if (playbackMode !== 'loop' || currentRandomMelody.length === 0) return;
+    const newMelody = [...currentRandomMelody];
+    const changes = Math.floor(Math.random() * 2) + 2;
+    for (let i = 0; i < changes; i++) {
+      const indexToChange = Math.floor(Math.random() * newMelody.length);
+      const scale = SCALES[randomKey];
+      const chordIndex = Math.floor(indexToChange / 4) % currentRandomProgression.length;
+      const currentChordNotes = currentRandomProgression[chordIndex];
+      newMelody[indexToChange] = generateConsistentMelodyNote(scale, currentChordNotes, { min: 4, max: 5 });
+    }
+    setCurrentRandomMelody(newMelody);
+  };
 
-  const handleRandomizeDrums = () => { setCurrentDrumPatternIndex(Math.floor(Math.random() * drumPatterns.length)); };
   const handleTempoChange = (e: React.ChangeEvent<HTMLInputElement>) => { const newTempo = parseInt(e.target.value); setTempo(newTempo); Tone.Transport.bpm.value = newTempo; };
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => { const newVolume = parseInt(e.target.value); setVolume(newVolume); if (!isMuted) { Tone.Destination.volume.value = newVolume; } };
   const handleToggleMute = () => { setIsMuted(!isMuted); };
@@ -326,11 +329,17 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-inter p-4 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-inter p-4 flex flex-col items-center justify-center transition-colors duration-300">
       {appMode === 'beatrx' ? (
-        <div className="w-full max-w-6xl bg-gray-800 rounded-xl shadow-lg p-6 space-y-6">
-          <div className="relative mb-2 text-center">
-            <h1 className="text-4xl font-bold text-indigo-400">BeatRX K-GEN Music Generator</h1>
+        <div className="w-full max-w-6xl bg-[var(--bg-ui)] rounded-xl shadow-lg p-6 space-y-6 transition-colors duration-300">
+          <div className="relative text-center">
+            <div className="absolute top-0 left-0 flex items-center gap-2">
+                <button onClick={() => setTheme('light')} className={`p-2 rounded-full transition-colors ${theme === 'light' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)]'}`}><LucideSun size={18} /></button>
+                <button onClick={() => setTheme('dark')} className={`p-2 rounded-full transition-colors ${theme === 'dark' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)]'}`}><LucideMoon size={18} /></button>
+                <button onClick={() => setTheme('branded')} className={`p-2 rounded-full transition-colors ${theme === 'branded' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)]'}`}><LucideFlame size={18} /></button>
+            </div>
+            <h1 className="text-4xl font-bold text-[var(--text-accent)]">BeatRX K-GEN Music Generator</h1>
+            <p className="text-sm text-[var(--text-secondary)] text-center mt-1 mb-6">Create unique procedural music</p>
             <button
                 onClick={() => setAppMode('piano')}
                 className="absolute top-0 right-0 flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold rounded-lg shadow-md transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95"
@@ -351,39 +360,43 @@ const App: React.FC = () => {
                   <button onClick={generateRandomMusicData} className="flex items-center justify-center p-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 w-auto" aria-label="Randomize Melody">
                       <LucideShuffle className="w-5 h-5" />
                   </button>
-                  <button onClick={handleRandomizeDrums} className="flex items-center justify-center p-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 w-auto" aria-label="Randomize Drums">
+                   <button onClick={handleEvolve} className="flex items-center justify-center p-3 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 w-auto" aria-label="Evolve Melody">
+                      <LucideWand2 className="w-5 h-5" />
+                  </button>
+                  <button onClick={handleCycleDrums} className="flex items-center justify-center p-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95 w-auto" aria-label="Cycle Drums">
                       <LucideDrum className="w-5 h-5" />
                   </button>
+                  <span className="text-sm text-[var(--text-secondary)] font-mono">Drums: {currentDrumPatternIndex + 1}/{drumPatterns.length}</span>
                 </>
               )}
             </div>
             <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 mt-4 md:mt-0 flex-grow">
-              <select id="mode-select" value={activeMode} onChange={(e) => setActiveMode(e.target.value as 'random' | 'manual')} className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm flex-grow sm:flex-grow-0">
+              <select id="mode-select" value={activeMode} onChange={(e) => setActiveMode(e.target.value as 'random' | 'manual')} className="px-4 py-2 bg-[var(--bg-control)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] transition-colors duration-200 text-sm flex-grow sm:flex-grow-0">
                 <option value="random">Random</option>
                 <option value="manual">Manual</option>
               </select>
-              <select id="palette-select" value={soundPalette} onChange={handlePaletteChange} className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm flex-grow sm:flex-grow-0">
+              <select id="palette-select" value={soundPalette} onChange={handlePaletteChange} className="px-4 py-2 bg-[var(--bg-control)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] transition-colors duration-200 text-sm flex-grow sm:flex-grow-0">
                 {soundPalettes.map((p) => (<option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>))}
               </select>
               {activeMode === 'random' && (
                 <>
-                  <select id="playback-mode-select" value={playbackMode} onChange={(e) => setPlaybackMode(e.target.value as PlaybackMode)} className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm flex-grow sm:flex-grow-0">
+                  <select id="playback-mode-select" value={playbackMode} onChange={(e) => setPlaybackMode(e.target.value as PlaybackMode)} className="px-4 py-2 bg-[var(--bg-control)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] transition-colors duration-200 text-sm flex-grow sm:flex-grow-0">
                     <option value="loop">Loop</option>
                     <option value="song">Song (Continuous)</option>
                   </select>
-                  <select id="key-select" value={currentRootKey} onChange={(e) => setCurrentRootKey(e.target.value as RootKeyOption)} className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm flex-grow sm:flex-grow-0">
+                  <select id="key-select" value={currentRootKey} onChange={(e) => setCurrentRootKey(e.target.value as RootKeyOption)} className="px-4 py-2 bg-[var(--bg-control)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] transition-colors duration-200 text-sm flex-grow sm:flex-grow-0">
                     <option value="random">Random</option>
                     {ROOT_NOTES.map(root => (<option key={root} value={root}>{root}</option>))}
                   </select>
-                  <select id="scale-mode-select" value={currentScaleMode} onChange={(e) => setCurrentScaleMode(e.target.value as ScaleMode)} className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm flex-grow sm:flex-grow-0">
+                  <select id="scale-mode-select" value={currentScaleMode} onChange={(e) => setCurrentScaleMode(e.target.value as ScaleMode)} className="px-4 py-2 bg-[var(--bg-control)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] transition-colors duration-200 text-sm flex-grow sm:flex-grow-0">
                     <option value="random">Random</option>
                     <option value="major">Major</option>
                     <option value="minor">Minor</option>
                     <option value="harmonic_minor">H. Minor</option>
                   </select>
-                  <div className="flex items-center justify-center bg-gray-700 border border-gray-600 rounded-lg px-3 py-1.5">
-                      <label htmlFor="arp-toggle" className="text-sm font-medium text-white mr-2">Arp</label>
-                      <input id="arp-toggle" type="checkbox" checked={isArpeggiatorOn} onChange={e => setIsArpeggiatorOn(e.target.checked)} className="w-4 h-4 text-indigo-600 bg-gray-600 border-gray-500 rounded focus:ring-indigo-500" />
+                  <div className="flex items-center justify-center bg-[var(--bg-control)] border border-[var(--border-color)] rounded-lg px-3 py-1.5">
+                      <label htmlFor="arp-toggle" className="text-sm font-medium text-[var(--text-primary)] mr-2">Arp</label>
+                      <input id="arp-toggle" type="checkbox" checked={isArpeggiatorOn} onChange={e => setIsArpeggiatorOn(e.target.checked)} className="w-4 h-4 text-[var(--accent-color)] bg-gray-600 border-gray-500 rounded focus:ring-[var(--accent-color)]" />
                   </div>
                 </>
               )}
@@ -391,49 +404,49 @@ const App: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 items-center">
             <div className="flex items-center w-full gap-2">
-              <label htmlFor="tempo-slider" className="text-lg font-medium text-gray-300 min-w-[100px]">Tempo: {tempo} BPM</label>
-              <input id="tempo-slider" type="range" min="40" max="140" value={tempo} onChange={handleTempoChange} className="flex-grow h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-sm accent-indigo-500" />
+              <label htmlFor="tempo-slider" className="text-lg font-medium text-[var(--text-primary)] min-w-[100px]">Tempo: {tempo} BPM</label>
+              <input id="tempo-slider" type="range" min="40" max="140" value={tempo} onChange={handleTempoChange} className="flex-grow h-2 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer range-sm accent-[var(--accent-color)]" />
             </div>
             <div className="flex items-center w-full gap-2">
-              <label htmlFor="volume-slider" className="text-lg font-medium text-gray-300 min-w-[100px]">Volume: {isMuted ? 'Muted' : `${volume} dB`}</label>
-              <input id="volume-slider" type="range" min="-40" max="0" value={volume} onChange={handleVolumeChange} disabled={isMuted} className="flex-grow h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-sm accent-indigo-500" />
-              <button onClick={handleToggleMute} className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors duration-200">
-                {isMuted ? <LucideVolumeX className="w-5 h-5 text-gray-300" /> : <LucideVolume2 className="w-5 h-5 text-gray-300" />}
+              <label htmlFor="volume-slider" className="text-lg font-medium text-[var(--text-primary)] min-w-[100px]">Volume: {isMuted ? 'Muted' : `${volume} dB`}</label>
+              <input id="volume-slider" type="range" min="-40" max="0" value={volume} onChange={handleVolumeChange} disabled={isMuted} className="flex-grow h-2 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer range-sm accent-[var(--accent-color)]" />
+              <button onClick={handleToggleMute} className="p-2 rounded-full bg-[var(--bg-control)] hover:bg-opacity-80 transition-colors duration-200">
+                {isMuted ? <LucideVolumeX className="w-5 h-5 text-[var(--text-primary)]" /> : <LucideVolume2 className="w-5 h-5 text-[var(--text-primary)]" />}
               </button>
             </div>
           </div>
           {activeMode === 'manual' && (
             <div className="mt-8">
               <div className="flex items-center justify-center mb-4">
-                <h2 className="text-2xl font-semibold text-indigo-300 text-center mr-2">Manual Sequencer</h2>
-                <button onClick={() => setShowManualGuide(true)} className="p-1 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors duration-200" aria-label="Show Manual Mode Guide">
-                  <LucideInfo className="w-5 h-5 text-gray-300" />
+                <h2 className="text-2xl font-semibold text-[var(--text-accent)] text-center mr-2">Manual Sequencer</h2>
+                <button onClick={() => setShowManualGuide(true)} className="p-1 rounded-full bg-[var(--bg-control)] hover:bg-opacity-80 transition-colors duration-200" aria-label="Show Manual Mode Guide">
+                  <LucideInfo className="w-5 h-5 text-[var(--text-primary)]" />
                 </button>
               </div>
-              <div className="overflow-x-auto p-2 bg-gray-700 rounded-lg shadow-inner">
+              <div className="overflow-x-auto p-2 bg-[var(--bg-control)] rounded-lg shadow-inner">
                 <div className="grid gap-1 pb-1" style={{ gridTemplateColumns: `auto repeat(${16}, minmax(0, 1fr))` }}>
                   <div></div>
-                  {Array(16).fill(0).map((_, i) => (<div key={`step-header-${i}`} className={`w-6 h-6 flex items-center justify-center text-xs font-mono rounded-sm ${currentStep === i ? 'bg-indigo-600 text-white' : 'text-gray-400'}`}>{i + 1}</div>))}
+                  {Array(16).fill(0).map((_, i) => (<div key={`step-header-${i}`} className={`w-6 h-6 flex items-center justify-center text-xs font-mono rounded-sm ${currentStep === i ? 'bg-[var(--accent-color)] text-white' : 'text-[var(--text-secondary)]'}`}>{i + 1}</div>))}
                   {notesForManualSequence.map((note, noteIndex) => (
                     <React.Fragment key={`note-row-${noteIndex}`}>
-                      <div className="text-right pr-2 py-1 text-sm font-semibold text-gray-300 flex items-center justify-end">{note}</div>
-                      {manualSequence[noteIndex].map((isActive, stepIndex) => (<button key={`cell-${noteIndex}-${stepIndex}`} onClick={() => handleManualSequenceToggle(noteIndex, stepIndex)} className={`w-6 h-6 rounded-sm transition-all duration-100 ease-in-out ${isActive ? 'bg-green-500' : 'bg-gray-600'} ${currentStep === stepIndex ? 'border-2 border-indigo-400 scale-105' : 'border border-gray-500'} hover:scale-105 active:scale-95`} aria-label={`Toggle note ${note} at step ${stepIndex + 1}`}></button>))}
+                      <div className="text-right pr-2 py-1 text-sm font-semibold text-[var(--text-primary)] flex items-center justify-end">{note}</div>
+                      {manualSequence[noteIndex].map((isActive, stepIndex) => (<button key={`cell-${noteIndex}-${stepIndex}`} onClick={() => handleManualSequenceToggle(noteIndex, stepIndex)} className={`w-6 h-6 rounded-sm transition-all duration-100 ease-in-out ${isActive ? 'bg-green-500' : 'bg-gray-600'} ${currentStep === stepIndex ? 'border-2 border-[var(--accent-color)] scale-105' : 'border border-gray-500'} hover:scale-105 active:scale-95`} aria-label={`Toggle note ${note} at step ${stepIndex + 1}`}></button>))}
                     </React.Fragment>
                   ))}
                 </div>
               </div>
             </div>
           )}
-          {showManualGuide && (<div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4"><div className="bg-gray-800 rounded-xl p-6 max-w-lg w-full shadow-lg"><h3 className="text-2xl font-bold text-indigo-400 mb-4">Manual Mode Guide</h3><p className="text-gray-300 mb-4">In **Manual Mode**, you can compose your own 16-step melody! The grid represents musical notes (rows) over time (columns, 1 to 16 steps).</p><ul className="list-disc list-inside text-gray-300 space-y-2 mb-4"><li>**Notes (Rows)**: Each row corresponds to a specific musical note, from `C5` (highest) down to `C4` (lowest).</li><li>**Steps (Columns)**: Each column is a 16th note step in a 4/4 bar (total of 16 steps for one bar). The highlighted column shows the current playback position.</li><li>**Adding Notes**: Click on a cell to toggle a note `on` (green) or `off` at that specific step.</li><li>**Making Chords**: To play a chord, activate multiple notes in the same column (step). For example, activate `C4`, `E4`, and `G4` in the same column for a C Major chord.</li><li>**Rhythm**: Experiment with placing notes at different steps to create various rhythms.</li></ul><p className="text-gray-300 mb-4">The drums will continue to play a basic pattern to accompany your melody. Have fun composing!</p><button onClick={() => setShowManualGuide(false)} className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-colors duration-200">Got It!</button></div></div>)}
+          {showManualGuide && (<div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"><div className="bg-[var(--bg-ui)] rounded-xl p-6 max-w-lg w-full shadow-lg"><h3 className="text-2xl font-bold text-[var(--text-accent)] mb-4">Manual Mode Guide</h3><p className="text-[var(--text-primary)] mb-4">In **Manual Mode**, you can compose your own 16-step melody! The grid represents musical notes (rows) over time (columns, 1 to 16 steps).</p><ul className="list-disc list-inside text-[var(--text-primary)] space-y-2 mb-4"><li>**Notes (Rows)**: Each row corresponds to a specific musical note, from `C5` (highest) down to `C4` (lowest).</li><li>**Steps (Columns)**: Each column is a 16th note step in a 4/4 bar (total of 16 steps for one bar). The highlighted column shows the current playback position.</li><li>**Adding Notes**: Click on a cell to toggle a note `on` (green) or `off` at that specific step.</li><li>**Making Chords**: To play a chord, activate multiple notes in the same column (step). For example, activate `C4`, `E4`, and `G4` in the same column for a C Major chord.</li><li>**Rhythm**: Experiment with placing notes at different steps to create various rhythms.</li></ul><p className="text-[var(--text-primary)] mb-4">The drums will continue to play a basic pattern to accompany your melody. Have fun composing!</p><button onClick={() => setShowManualGuide(false)} className="w-full px-4 py-2 bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] text-white font-semibold rounded-lg transition-colors duration-200">Got It!</button></div></div>)}
           <div className="mt-8">
-            <h2 className="text-2xl font-semibold text-indigo-300 mb-4 text-center">Real-time Waveform</h2>
-            <div className="bg-gray-700 rounded-lg p-2 shadow-inner">
-              <canvas ref={waveformCanvasRef} className="w-full h-48 bg-gray-900 rounded-md border border-gray-600"></canvas>
+            <h2 className="text-2xl font-semibold text-[var(--text-accent)] mb-4 text-center">Real-time Waveform</h2>
+            <div className="bg-[var(--bg-control)] rounded-lg p-2 shadow-inner">
+              <canvas ref={waveformCanvasRef} className="w-full h-56 bg-[var(--bg-waveform)] rounded-md border border-[var(--border-color)]"></canvas>
             </div>
           </div>
         </div>
       ) : (
-        <div className="w-full max-w-7xl bg-gray-800 rounded-xl shadow-lg p-6 space-y-6">
+        <div className="w-full max-w-7xl bg-[var(--bg-ui)] rounded-xl shadow-lg p-6 space-y-6 transition-colors duration-300">
             <div className="relative mb-2 text-center">
                 <div/>
                 <button
@@ -448,7 +461,7 @@ const App: React.FC = () => {
             <Piano />
         </div>
       )}
-      <p className="text-center text-gray-500 text-sm mt-8 opacity-70">
+      <p className="text-center text-[var(--text-secondary)] text-sm mt-8 opacity-70">
         Made by justgl with Gemini AI
       </p>
     </div>
