@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as Tone from 'tone';
-import './Piano.css'; 
+import './Piano.css';
 
 const Piano: React.FC = () => {
     const monsterStageRef = useRef<HTMLDivElement>(null);
@@ -9,7 +9,9 @@ const Piano: React.FC = () => {
     const initialMessageRef = useRef<HTMLDivElement>(null);
 
     const synthRef = useRef<Tone.PolySynth | null>(null);
+    const reverbRef = useRef<Tone.Reverb | null>(null);
     const vibratoRef = useRef<Tone.Vibrato | null>(null);
+    
     const audioStartedRef = useRef(false);
     const monstersRef = useRef<{ element: HTMLDivElement; inUse: boolean; note: string | null; }[]>([]);
     const pressedKeysRef = useRef(new Set<string>());
@@ -19,24 +21,13 @@ const Piano: React.FC = () => {
     const particlesRef = useRef<any[]>([]);
 
     const [selectedSound, setSelectedSound] = useState('default');
+    const [reverbAmount, setReverbAmount] = useState(0);
+    const [vibratoAmount, setVibratoAmount] = useState(0);
 
     const keyNoteMap: Record<string, string> = {
-        'KeyZ': 'C3', 'KeyS': 'C#3', 'KeyX': 'D3', 'KeyD': 'D#3', 'KeyC': 'E3', 'KeyV': 'F3',
-        'KeyG': 'F#3', 'KeyB': 'G3', 'KeyH': 'G#3', 'KeyN': 'A3', 'KeyJ': 'A#3', 'KeyM': 'B3',
-        'Comma': 'C4', 'Period': 'D4', 'Slash': 'E4',
-        'KeyL': 'C#4', 'Semicolon': 'D#4',
-        'KeyQ': 'C4', 'Digit2': 'C#4', 'KeyW': 'D4', 'Digit3': 'D#4', 'KeyE': 'E4', 'KeyR': 'F4',
-        'Digit5': 'F#4', 'KeyT': 'G4', 'Digit6': 'G#4', 'KeyY': 'A4', 'Digit7': 'A#4', 'KeyU': 'B4',
-        'KeyI': 'C5', 'Digit9': 'C#5', 'KeyO': 'D5', 'Digit0': 'D#5', 'KeyP': 'E5',
-        'BracketLeft': 'F5', 'Equal': 'F#5', 'BracketRight': 'G5', 'Backspace': 'G#5', 'Backslash': 'A5'
+        'KeyZ': 'C3', 'KeyS': 'C#3', 'KeyX': 'D3', 'KeyD': 'D#3', 'KeyC': 'E3', 'KeyV': 'F3', 'KeyG': 'F#3', 'KeyB': 'G3', 'KeyH': 'G#3', 'KeyN': 'A3', 'KeyJ': 'A#3', 'KeyM': 'B3', 'Comma': 'C4', 'Period': 'D4', 'Slash': 'E4', 'KeyL': 'C#4', 'Semicolon': 'D#4', 'KeyQ': 'C4', 'Digit2': 'C#4', 'KeyW': 'D4', 'Digit3': 'D#4', 'KeyE': 'E4', 'KeyR': 'F4', 'Digit5': 'F#4', 'KeyT': 'G4', 'Digit6': 'G#4', 'KeyY': 'A4', 'Digit7': 'A#4', 'KeyU': 'B4', 'KeyI': 'C5', 'Digit9': 'C#5', 'KeyO': 'D5', 'Digit0': 'D#5', 'KeyP': 'E5', 'BracketLeft': 'F5', 'Equal': 'F#5', 'BracketRight': 'G5', 'Backspace': 'G#5', 'Backslash': 'A5'
     };
-
-    const visualKeys = [
-        'KeyZ', 'KeyS', 'KeyX', 'KeyD', 'KeyC', 'KeyV', 'KeyG', 'KeyB', 'KeyH', 'KeyN', 'KeyJ', 'KeyM',
-        'KeyQ', 'Digit2', 'KeyW', 'Digit3', 'KeyE', 'KeyR', 'Digit5', 'KeyT', 'Digit6', 'KeyY', 'Digit7', 'KeyU',
-        'KeyI', 'Digit9', 'KeyO', 'Digit0', 'KeyP', 'BracketLeft', 'Equal', 'BracketRight', 'Backspace', 'Backslash'
-    ];
-
+    const visualKeys = [ 'KeyZ', 'KeyS', 'KeyX', 'KeyD', 'KeyC', 'KeyV', 'KeyG', 'KeyB', 'KeyH', 'KeyN', 'KeyJ', 'KeyM', 'KeyQ', 'Digit2', 'KeyW', 'Digit3', 'KeyE', 'KeyR', 'Digit5', 'KeyT', 'Digit6', 'KeyY', 'Digit7', 'KeyU', 'KeyI', 'Digit9', 'KeyO', 'Digit0', 'KeyP', 'BracketLeft', 'Equal', 'BracketRight', 'Backspace', 'Backslash' ];
     const keyAliasMap: Record<string, string> = { 'Comma': 'KeyQ', 'Period': 'KeyW', 'Slash': 'KeyE', 'KeyL': 'Digit2', 'Semicolon': 'Digit3' };
     const isBlackKey = (note: string) => note.includes('#');
 
@@ -51,35 +42,62 @@ const Piano: React.FC = () => {
         return '';
     };
 
+    const handlePresetChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedSound(event.target.value);
+        setReverbAmount(0);
+        setVibratoAmount(0);
+    };
+
+    useEffect(() => {
+        if (reverbRef.current) {
+            reverbRef.current.wet.value = reverbAmount;
+        }
+    }, [reverbAmount]);
+
+    useEffect(() => {
+        if (vibratoRef.current) {
+            vibratoRef.current.depth.value = vibratoAmount;
+        }
+    }, [vibratoAmount]);
+
     useEffect(() => {
         const monsterStage = monsterStageRef.current;
         const pianoContainer = pianoContainerRef.current;
-        const initialMessage = initialMessageRef.current;
         const canvas = canvasRef.current;
-        if (!monsterStage || !pianoContainer || !initialMessage || !canvas) return;
+        if (!monsterStage || !pianoContainer || !canvas) return;
 
         const ctx = canvas.getContext('2d');
+        let midiAccess: WebMidi.MIDIAccess | null = null;
 
+        if (!reverbRef.current) {
+            reverbRef.current = new Tone.Reverb({ decay: 2, wet: 0 }).toDestination();
+        }
+        if (!vibratoRef.current) {
+            vibratoRef.current = new Tone.Vibrato({ frequency: 5, depth: 0 });
+        }
+        
         const synthOptions = {
             default: { synth: Tone.Synth, options: { oscillator: { type: 'fatsawtooth' as const }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.7, release: 0.8 } } },
             amSynth: { synth: Tone.AMSynth, options: { harmonicity: 2, detune: 0, oscillator: { type: "sawtooth" as const }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.9 }, modulation: { type: "square" as const }, modulationEnvelope: { attack: 0.02, decay: 0.2, sustain: 0.3, release: 0.5 } } },
             fmSynth: { synth: Tone.FMSynth, options: { harmonicity: 3, modulationIndex: 10, detune: 0, oscillator: { type: "sine" as const }, envelope: { attack: 0.01, decay: 0.01, sustain: 1, release: 0.5 }, modulation: { type: "square" as const }, modulationEnvelope: { attack: 0.01, decay: 0, sustain: 1, release: 0.5 } } },
-            keygenNostalgia: { synth: Tone.Synth, options: { volume: -3, oscillator: { type: 'square' as const }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.2 } } }
+            keygenNostalgia: { synth: Tone.Synth, options: { volume: -3, oscillator: { type: 'square' as const }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.2 } } },
+            sawtooth: { synth: Tone.Synth, options: { oscillator: { type: 'sawtooth' as const }}},
+            square: { synth: Tone.Synth, options: { oscillator: { type: 'square' as const }}},
+            sine: { synth: Tone.Synth, options: { oscillator: { type: 'sine' as const }}},
+            triangle: { synth: Tone.Synth, options: { oscillator: { type: 'triangle' as const }}},
+            chiptune: { synth: Tone.Synth, options: { volume: -8, oscillator: { type: 'square' as const }, envelope: { attack: 0.001, decay: 0.1, sustain: 0.2, release: 0.2 } } },
         };
 
         const createSynth = (type: string) => {
             if (synthRef.current) synthRef.current.dispose();
-            if (vibratoRef.current) vibratoRef.current.dispose();
-
             const config = synthOptions[type as keyof typeof synthOptions];
+            synthRef.current = new Tone.PolySynth(config.synth as any, config.options);
             
-            if (type === 'keygenNostalgia') {
-                vibratoRef.current = new Tone.Vibrato({ frequency: 5, depth: 0.05, type: 'square' }).toDestination();
-                synthRef.current = new Tone.PolySynth(config.synth as any, config.options).connect(vibratoRef.current);
-            } else {
-                synthRef.current = new Tone.PolySynth(config.synth as any, config.options).toDestination();
+            if (vibratoRef.current && reverbRef.current) {
+                synthRef.current.connect(vibratoRef.current);
+                vibratoRef.current.connect(Tone.Destination);
+                synthRef.current.connect(reverbRef.current);
             }
-
             if(synthRef.current) {
                 synthRef.current.maxPolyphony = 12;
             }
@@ -139,27 +157,23 @@ const Piano: React.FC = () => {
             if (!audioStartedRef.current) {
                 await Tone.start();
                 audioStartedRef.current = true;
-                if(initialMessage) initialMessage.style.display = 'none';
+                if(initialMessageRef.current) initialMessageRef.current.classList.add('fade-out');
             }
         };
 
         const playNote = (keyCode: string) => {
-            if (pressedKeysRef.current.has(keyCode) || !synthRef.current) return;
-
+            if (!synthRef.current) return;
             const note = keyNoteMap[keyCode];
-            if (note) {
+            if (note && !pressedKeysRef.current.has(keyCode)) {
                 pressedKeysRef.current.add(keyCode);
                 synthRef.current.triggerAttack(note, Tone.now());
-
                 const visualKeyCode = keyAliasMap[keyCode] || keyCode;
                 const keyElement = pianoContainer.querySelector(`[data-key="${visualKeyCode}"]`);
                 if (keyElement) keyElement.classList.add('active');
-
                 const availableMonster = monstersRef.current.find(m => !m.inUse);
                 if (availableMonster) {
                     availableMonster.inUse = true;
                     availableMonster.note = note;
-
                     let position = notePositionsRef.current[note];
                     if (note !== lastNotePlayedRef.current || !position) {
                         position = {
@@ -169,12 +183,10 @@ const Piano: React.FC = () => {
                         notePositionsRef.current[note] = position;
                     }
                     lastNotePlayedRef.current = note;
-
                     availableMonster.element.style.left = position.left;
                     availableMonster.element.style.bottom = position.bottom;
                     availableMonster.element.classList.add('singing');
                 }
-
                 if(canvas){
                     particlesRef.current.push({
                         x: (Math.random() - 0.5) * (canvas.width * 0.4),
@@ -191,11 +203,9 @@ const Piano: React.FC = () => {
             if (note && synthRef.current) {
                 pressedKeysRef.current.delete(keyCode);
                 synthRef.current.triggerRelease(note, Tone.now());
-
                 const visualKeyCode = keyAliasMap[keyCode] || keyCode;
                 const keyElement = pianoContainer.querySelector(`[data-key="${visualKeyCode}"]`);
                 if (keyElement) keyElement.classList.remove('active');
-
                 const monsterToStop = monstersRef.current.find(m => m.inUse && m.note === note);
                 if (monsterToStop) {
                     monsterToStop.inUse = false;
@@ -204,7 +214,7 @@ const Piano: React.FC = () => {
                 }
             }
         };
-
+        
         const handleKeyDown = (event: KeyboardEvent) => {
             startAudio();
             if (keyNoteMap[event.code] && !event.repeat) {
@@ -246,6 +256,39 @@ const Piano: React.FC = () => {
             }
         };
 
+        const midiToKeyCodeMap: { [key: number]: string } = {};
+        for (const [keyCode, noteName] of Object.entries(keyNoteMap)) {
+            const midiValue = Tone.Midi(noteName).toMidi();
+            midiToKeyCodeMap[midiValue] = keyCode;
+        }
+    
+        const onMidiMessage = (event: WebMidi.MIDIMessageEvent) => {
+            const [command, note, velocity] = event.data;
+            const keyCode = midiToKeyCodeMap[note];
+    
+            if (!keyCode) return;
+    
+            if (command === 144 && velocity > 0) {
+                startAudio();
+                playNote(keyCode);
+            } else if (command === 128 || (command === 144 && velocity === 0)) {
+                stopNote(keyCode);
+            }
+        };
+    
+        const setupMidi = async () => {
+            if (navigator.requestMIDIAccess) {
+                try {
+                    midiAccess = await navigator.requestMIDIAccess();
+                    midiAccess.inputs.forEach((input) => {
+                        input.onmidimessage = onMidiMessage;
+                    });
+                } catch (error) {
+                    console.error("MIDI access denied or not available.", error);
+                }
+            }
+        };
+
         window.addEventListener('keydown', handleKeyDown);
         window.addEventListener('keyup', handleKeyUp);
         window.addEventListener('resize', resizeCanvas);
@@ -256,6 +299,7 @@ const Piano: React.FC = () => {
         
         resizeCanvas();
         localAnimateKaleidoscope();
+        setupMidi();
 
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
@@ -264,23 +308,34 @@ const Piano: React.FC = () => {
             window.removeEventListener('mouseup', handlePointerUp);
             window.removeEventListener('touchend', handlePointerUp);
             
+            if (midiAccess) {
+                midiAccess.inputs.forEach((input) => {
+                    input.onmidimessage = null;
+                });
+            }
+
             if (synthRef.current) {
                 synthRef.current.releaseAll();
                 synthRef.current.dispose();
             }
-            if(vibratoRef.current) vibratoRef.current.dispose();
-
+            if(reverbRef.current) {
+                reverbRef.current.dispose();
+                reverbRef.current = null;
+            }
+            if(vibratoRef.current) {
+                vibratoRef.current.dispose();
+                vibratoRef.current = null;
+            }
             if(animationFrameIdRef.current) {
                 cancelAnimationFrame(animationFrameIdRef.current);
             }
         };
-
     }, [selectedSound]);
 
     return (
         <div className="w-full max-w-7xl text-center flex flex-col items-center">
-            <h1 className="text-3xl md:text-5xl mb-2 title-font text-yellow-300">BeatRX Piano</h1>
-            <p className="mb-6 text-gray-400">Play on the keyboard, choose sounds, and create music!</p>
+            <h1 className="text-3xl md:text-5xl mb-2 title-font">BeatRX Piano</h1>
+            <p className="mb-6 text-[var(--text-secondary)]">Play on the keyboard, choose sounds, and create music!</p>
 
             <div id="monster-stage" ref={monsterStageRef} className="monster-stage w-full">
                 <canvas id="kaleidoscope-canvas" ref={canvasRef}></canvas>
@@ -298,22 +353,42 @@ const Piano: React.FC = () => {
                 })}
             </div>
 
-            <div>
-                <select
-                    id="sound-selector"
-                    className="sound-select"
-                    value={selectedSound}
-                    onChange={(e) => setSelectedSound(e.target.value)}
-                >
-                    <option value="default">Classic Synthesizer</option>
-                    <option value="amSynth">Cosmic Bell</option>
-                    <option value="fmSynth">Warm Organ</option>
-                    <option value="keygenNostalgia">Nostalgia</option>
-                </select>
+            <div className="mt-4 flex flex-col sm:flex-row gap-4 sm:gap-8 items-center justify-center">
+                <div className="flex items-center gap-2">
+                    <label htmlFor="sound-selector" className="font-bold text-[var(--text-secondary)]">Presets:</label>
+                    <select
+                        id="sound-selector"
+                        className="sound-select"
+                        value={selectedSound}
+                        onChange={handlePresetChange}
+                    >
+                        <option value="default">Classic Synth</option>
+                        <option value="amSynth">Cosmic Bell</option>
+                        <option value="fmSynth">Warm Organ</option>
+                        <option value="keygenNostalgia">Nostalgia</option>
+                        <option value="chiptune">Chiptune</option>
+                        <option value="sawtooth">Sawtooth</option>
+                        <option value="square">Square</option>
+                        <option value="sine">Sine</option>
+                        <option value="triangle">Triangle</option>
+                    </select>
+                </div>
+
+                <div className="flex flex-col gap-2 w-48">
+                    <label className="text-sm font-bold text-[var(--text-secondary)]">Reverb: {Math.round(reverbAmount * 100)}%</label>
+                    <input type="range" min="0" max="1" step="0.01" value={reverbAmount} onChange={(e) => setReverbAmount(parseFloat(e.target.value))} className="w-full h-2 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer range-sm accent-[var(--accent-color)]" />
+                </div>
+                
+                <div className="flex flex-col gap-2 w-48">
+                    <label className="text-sm font-bold text-[var(--text-secondary)]">Vibrato: {Math.round(vibratoAmount * 100)}%</label>
+                    <input type="range" min="0" max="0.5" step="0.01" value={vibratoAmount} onChange={(e) => setVibratoAmount(parseFloat(e.target.value))} className="w-full h-2 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer range-sm accent-[var(--accent-color)]" />
+                </div>
             </div>
 
-            <div id="initial-message" ref={initialMessageRef} className="mt-4 text-xl text-green-400 font-bold animate-pulse">
-                Press any piano key to begin
+            <div className="mt-4 h-10 flex items-center justify-center">
+                <p ref={initialMessageRef} className="text-xl text-green-400 font-bold animate-pulse">
+                    Press any piano key to begin
+                </p>
             </div>
         </div>
     );
