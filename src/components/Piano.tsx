@@ -385,11 +385,6 @@ const Piano: React.FC = () => {
                 </div>
             </div>
 
-            <div className="mt-4 h-10 flex items-center justify-center">
-                <p ref={initialMessageRef} className="text-xl text-green-400 font-bold animate-pulse">
-                    Press any piano key to begin
-                </p>
-            </div>
         </div>
     );
 };
