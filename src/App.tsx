@@ -338,7 +338,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-inter p-4 flex flex-col items-center justify-center transition-colors duration-300">
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-inter p-4 flex flex-col items-center justify-center transition-colors duration-300 select-none">
       {appMode === 'beatrx' ? (
         <div className="w-full max-w-6xl bg-[var(--bg-ui)] rounded-xl shadow-lg p-6 space-y-6 transition-colors duration-300">
           <div className="relative text-center">
