@@ -280,7 +280,7 @@ const Piano: React.FC = () => {
             if (navigator.requestMIDIAccess) {
                 try {
                     midiAccess = await navigator.requestMIDIAccess();
-                    midiAccess.inputs.forEach((input) => {
+                    midiAccess.inputs.forEach((input: WebMidi.MIDIInput) => {
                         input.onmidimessage = onMidiMessage;
                     });
                 } catch (error) {
@@ -309,7 +309,7 @@ const Piano: React.FC = () => {
             window.removeEventListener('touchend', handlePointerUp);
             
             if (midiAccess) {
-                midiAccess.inputs.forEach((input) => {
+                midiAccess.inputs.forEach((input: WebMidi.MIDIInput) => {
                     input.onmidimessage = null;
                 });
             }
