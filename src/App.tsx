@@ -85,13 +85,22 @@ const App: React.FC = () => {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
-  
-  useEffect(() => {
-    if (appMode === 'piano' && isPlaying) {
+
+  const switchToPianoMode = () => {
+    if (isPlaying) {
       setIsPlaying(false);
     }
-  }, [appMode, isPlaying]);
-
+    if (synthRef.current && synthRef.current instanceof Tone.PolySynth) {
+      synthRef.current.releaseAll();
+    }
+    bassSynthRef.current?.triggerRelease();
+    chiptuneMelodyNoteRef.current = null;
+    
+    setTimeout(() => {
+      setAppMode('piano');
+    }, 50);
+  };
+  
   useEffect(() => {
     synthRef.current?.dispose();
     bassSynthRef.current?.dispose();
@@ -341,7 +350,7 @@ const App: React.FC = () => {
             <h1 className="text-4xl font-bold text-[var(--text-accent)]">BeatRX K-GEN Music Generator</h1>
             <p className="text-sm text-[var(--text-secondary)] text-center mt-1 mb-6">Create unique procedural music</p>
             <button
-                onClick={() => setAppMode('piano')}
+                onClick={switchToPianoMode}
                 className="absolute top-0 right-0 flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold rounded-lg shadow-md transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95"
                 aria-label="Switch to Piano Mode"
             >
@@ -430,7 +439,7 @@ const App: React.FC = () => {
                   {notesForManualSequence.map((note, noteIndex) => (
                     <React.Fragment key={`note-row-${noteIndex}`}>
                       <div className="text-right pr-2 py-1 text-sm font-semibold text-[var(--text-primary)] flex items-center justify-end">{note}</div>
-                      {manualSequence[noteIndex].map((isActive, stepIndex) => (<button key={`cell-${noteIndex}-${stepIndex}`} onClick={() => handleManualSequenceToggle(noteIndex, stepIndex)} className={`w-6 h-6 rounded-sm transition-all duration-100 ease-in-out ${isActive ? 'bg-green-500' : 'bg-gray-600'} ${currentStep === stepIndex ? 'border-2 border-[var(--accent-color)] scale-105' : 'border border-gray-500'} hover:scale-105 active:scale-95`} aria-label={`Toggle note ${note} at step ${stepIndex + 1}`}></button>))}
+                      {manualSequence[noteIndex].map((isActive, stepIndex) => (<button key={`cell-${noteIndex}-${stepIndex}`} onClick={() => handleManualSequenceToggle(noteIndex, stepIndex)} className={`w-6 h-6 rounded-sm transition-all duration-100 ease-in-out ${isActive ? 'bg-green-500' : 'bg-gray-600'} ${currentStep === stepIndex ? 'border-2 border-[var(--accent-color)] scale-105' : 'border-gray-500'} hover:scale-105 active:scale-95`} aria-label={`Toggle note ${note} at step ${stepIndex + 1}`}></button>))}
                     </React.Fragment>
                   ))}
                 </div>
