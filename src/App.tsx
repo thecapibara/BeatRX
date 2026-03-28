@@ -51,8 +51,8 @@ const App: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeMode, setActiveMode] = useState<'random' | 'manual'>('random');
   const [soundPalette, setSoundPalette] = useState<SoundPalette>('sawtooth');
-  const [tempo, setTempo] = useState(90);
-  const [volume, setVolume] = useState(0);
+  const [tempo, setTempo] = useState(70);
+  const [volume, setVolume] = useState(-5);
   const [isMuted, setIsMuted] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showManualGuide, setShowManualGuide] = useState(false);
