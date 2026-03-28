@@ -87,6 +87,10 @@ const App: React.FC = () => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
+  useEffect(() => {
+    Tone.Transport.bpm.value = tempo;
+  }, []);
+
   const switchToPianoMode = () => {
     if (isPlaying) {
       setIsPlaying(false);
