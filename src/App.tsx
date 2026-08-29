@@ -144,7 +144,9 @@ const App: React.FC = () => {
     setAppMode(mode);
   };
   
-  useEffect(() => {
+  const audioStartedRef = useRef(false);
+
+  const setupSynths = useCallback(() => {
     synthRef.current?.dispose();
     bassSynthRef.current?.dispose();
     kickSynthRef.current?.dispose();
@@ -199,10 +201,37 @@ const App: React.FC = () => {
         snareSynthRef.current = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.2, sustain: 0 } }).toDestination();
         hihatSynthRef.current = new Tone.MetalSynth({ envelope: { attack: 0.001, decay: 0.1, release: 0.05 }, harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1 }).toDestination();
     }
-    
-    return () => { sequenceRef.current?.dispose(); };
   }, [soundPalette]);
 
+  useEffect(() => {
+    if (audioStartedRef.current) {
+      setupSynths();
+    }
+  }, [soundPalette, setupSynths]);
+
+  useEffect(() => {
+    const handleFirstGesture = async () => {
+      try {
+        if (!audioStartedRef.current) {
+          await Tone.start();
+          audioStartedRef.current = true;
+          setupSynths();
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    window.addEventListener('pointerdown', handleFirstGesture, { once: true });
+    window.addEventListener('keydown', handleFirstGesture, { once: true });
+    window.addEventListener('touchstart', handleFirstGesture, { once: true });
+
+    return () => {
+      window.removeEventListener('pointerdown', handleFirstGesture);
+      window.removeEventListener('keydown', handleFirstGesture);
+      window.removeEventListener('touchstart', handleFirstGesture);
+    };
+  }, [setupSynths]);
   useEffect(() => {
     Tone.Transport.bpm.value = tempo;
   }, [tempo]);
@@ -338,7 +367,10 @@ const App: React.FC = () => {
 
   const handlePlayPause = async () => {
     if (!isPlaying) {
-      await Tone.start(); setIsPlaying(true);
+      await Tone.start();
+      audioStartedRef.current = true;
+      setupSynths();
+      setIsPlaying(true);
     } else {
       setIsPlaying(false);
       if (synthRef.current instanceof Tone.PolySynth) { synthRef.current.releaseAll(); }
