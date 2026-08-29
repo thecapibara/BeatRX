@@ -29,9 +29,45 @@ const generateConsistentMelodyNote = (scale: string[], currentChordNotes: string
   }
 };
 
-const soundPalettes = ['sawtooth', 'square', 'sine', 'triangle', 'Chiptune', 'Synthwave', 'Acid', 'FM Bells'] as const;
-type SoundPalette = typeof soundPalettes[number];
-const drumPatterns = [ { name: 'House', kick: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0], }, { name: 'Breakbeat', kick: [1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0], snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], }, { name: 'Trap', kick: [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0], snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1], }, { name: 'Minimal', kick: [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], snare: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0], }, { name: 'Synthwave', kick: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0], }, ];
+interface SoundPaletteDef {
+  id: string;
+  name: string;
+  category: 'Retro & Keygen' | 'Electronic & Synth' | 'Keys & Ambient' | 'Raw Waves';
+}
+
+const SOUND_PALETTES: SoundPaletteDef[] = [
+  // Retro & Keygen
+  { id: 'Chiptune', name: '👾 8-Bit Chiptune', category: 'Retro & Keygen' },
+  { id: 'KeygenTracker', name: '👾 90s Keygen Tracker', category: 'Retro & Keygen' },
+  { id: 'Arcade84', name: '👾 Arcade 1984', category: 'Retro & Keygen' },
+
+  // Electronic & Synth
+  { id: 'Synthwave', name: '⚡ 80s Synthwave Brass', category: 'Electronic & Synth' },
+  { id: 'Cyberpunk', name: '⚡ Cyberpunk 2077', category: 'Electronic & Synth' },
+  { id: 'Acid', name: '⚡ Acid 303 Resonant', category: 'Electronic & Synth' },
+  { id: 'SuperSaw', name: '⚡ EDM SuperSaw', category: 'Electronic & Synth' },
+  { id: 'TrancePluck', name: '⚡ Trance Poly Pluck', category: 'Electronic & Synth' },
+  { id: 'FMBells', name: '⚡ FM Crystal Bells', category: 'Electronic & Synth' },
+  { id: 'FutureBass', name: '⚡ Future Bass Chords', category: 'Electronic & Synth' },
+
+  // Keys & Ambient
+  { id: 'GrandPiano', name: '🎹 Concert Grand Piano', category: 'Keys & Ambient' },
+  { id: 'VintageRhodes', name: '🎹 Vintage Rhodes EP', category: 'Keys & Ambient' },
+  { id: 'DreamyPad', name: '🌌 Celestial Dream Pad', category: 'Keys & Ambient' },
+  { id: 'JazzOrgan', name: '🪵 Hammond B3 Jazz Organ', category: 'Keys & Ambient' },
+  { id: 'CathedralOrgan', name: '⛪ Cathedral Pipe Organ', category: 'Keys & Ambient' },
+  { id: 'Marimba', name: '🪵 Concert Marimba', category: 'Keys & Ambient' },
+
+  // Raw Waves
+  { id: 'sawtooth', name: '〰️ Pure Sawtooth', category: 'Raw Waves' },
+  { id: 'square', name: '〰️ Pure Square', category: 'Raw Waves' },
+  { id: 'sine', name: '〰️ Pure Sine', category: 'Raw Waves' },
+  { id: 'triangle', name: '〰️ Pure Triangle', category: 'Raw Waves' },
+];
+
+export type SoundPalette = typeof SOUND_PALETTES[number]['id'];
+
+const drumPatterns = [ { name: 'House', kick: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0], }, { name: 'Breakbeat', kick: [1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0], snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], }, { name: 'Trap', kick: [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0], snare: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1], }, { name: 'Minimal', kick: [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], snare: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], hihat: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0], }, { name: 'Ambient', kick: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], snare: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], hihat: [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], } ];
 const SCALES = { 'C_major': ['C', 'D', 'E', 'F', 'G', 'A', 'B'], 'G_major': ['G', 'A', 'B', 'C', 'D', 'E', 'F#'], 'D_major': ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'], 'E_major': ['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#'], 'A_major': ['A', 'B', 'C#', 'D', 'E', 'F#', 'G#'], 'B_major': ['B', 'C#', 'D#', 'E', 'F#', 'G#', 'A#'], 'C_minor': ['C', 'D', 'Eb', 'F', 'G', 'Ab', 'Bb'], 'G_minor': ['G', 'A', 'Bb', 'C', 'D', 'Eb', 'F'], 'D_minor': ['D', 'E', 'F', 'G', 'A', 'Bb', 'C'], 'E_minor': ['E', 'F#', 'G', 'A', 'B', 'C', 'D'], 'A_minor': ['A', 'B', 'C', 'D', 'E', 'F', 'G'], 'B_minor': ['B', 'C#', 'D', 'E', 'F#', 'G', 'A'], 'C_harmonic_minor': ['C', 'D', 'Eb', 'F', 'G', 'Ab', 'B'], 'G_harmonic_minor': ['G', 'A', 'Bb', 'C', 'D', 'Eb', 'F#'], 'D_harmonic_minor': ['D', 'E', 'F', 'G', 'A', 'Bb', 'C#'], 'E_harmonic_minor': ['E', 'F#', 'G', 'A', 'B', 'C', 'D#'], 'A_harmonic_minor': ['A', 'B', 'C', 'D', 'E', 'F', 'G#'], 'B_harmonic_minor': ['B', 'C#', 'D', 'E', 'F#', 'G', 'A#'], };
 const CHORD_PROGRESSIONS_DEFINITIONS = { 'C_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }], 'G_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }], 'D_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }], 'A_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }], 'E_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }], 'B_major': [{ degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'V', rootOffset: 7, type: 'major' }, { degree: 'vi', rootOffset: 9, type: 'minor' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'I', rootOffset: 0, type: 'major' }, { degree: 'IV', rootOffset: 5, type: 'major' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'I', rootOffset: 0, type: 'major' }], 'C_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'G_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'D_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'A_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'E_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'B_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'III', rootOffset: 3, type: 'major' }, { degree: 'VII', rootOffset: 10, type: 'major' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'C_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'G_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'D_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'A_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'E_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], 'B_harmonic_minor': [{ degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }, { degree: 'VI', rootOffset: 8, type: 'major' }, { degree: 'iv', rootOffset: 5, type: 'minor' }, { degree: 'V7', rootOffset: 7, type: 'dominant7' }, { degree: 'i', rootOffset: 0, type: 'minor' }], } as const;
 type AllKey = keyof typeof SCALES;
@@ -115,7 +151,7 @@ const App: React.FC = () => {
   );
 
   const synthRef = useRef<Tone.PolySynth | Tone.MonoSynth | null>(null);
-  const bassSynthRef = useRef<Tone.Synth | Tone.FMSynth | null>(null);
+  const bassSynthRef = useRef<Tone.Synth | Tone.FMSynth | Tone.MonoSynth | null>(null);
   const kickSynthRef = useRef<Tone.MembraneSynth | null>(null);
   const snareSynthRef = useRef<Tone.NoiseSynth | null>(null);
   const hihatSynthRef = useRef<Tone.NoiseSynth | Tone.MetalSynth | null>(null);
@@ -166,32 +202,227 @@ const App: React.FC = () => {
     chorusRef.current.wet.value = 0;
     
     switch (soundPalette) {
-        case 'Synthwave':
-            chorusRef.current.wet.value = 0.5;
-            reverbRef.current.wet.value = 0.2;
-            synthRef.current = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'sawtooth' }, envelope: { attack: 0.01, decay: 0.5, sustain: 0.2, release: 0.8 } }).chain(chorusRef.current, reverbRef.current);
-            bassSynthRef.current = new Tone.FMSynth({ harmonicity: 0.5, envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 1 } }).toDestination();
-            break;
-        case 'Acid':
-            synthRef.current = new Tone.MonoSynth({ oscillator: { type: 'sawtooth' }, filter: { type: 'lowpass', rolloff: -24, Q: 8 }, filterEnvelope: { attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.5, baseFrequency: 200, octaves: 3 } }).toDestination();
-            bassSynthRef.current = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.3, sustain: 0.2, release: 0.5 } }).toDestination();
-            break;
-        case 'FM Bells':
-            delayRef.current.wet.value = 0.4;
-            synthRef.current = new Tone.PolySynth(Tone.FMSynth, { harmonicity: 3, modulationIndex: 15, envelope: { attack: 0.01, decay: 0.5, sustain: 0, release: 1.5 } }).connect(delayRef.current);
-            bassSynthRef.current = new Tone.FMSynth({ harmonicity: 0.5, envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 1 } }).toDestination();
-            break;
-        case 'Chiptune':
-            synthRef.current = new Tone.PolySynth(Tone.Synth, { volume: -12, oscillator: { type: 'square' }, envelope: { attack: 0.001, decay: 0.05, sustain: 1, release: 0.1 }, }).toDestination();
-            bassSynthRef.current = new Tone.Synth({ volume: -10, oscillator: { type: 'triangle' }, envelope: { attack: 0.001, decay: 0.3, sustain: 0.2, release: 0.5 }, }).toDestination();
-            break;
-        default:
-            synthRef.current = new Tone.PolySynth(Tone.Synth, { oscillator: { type: soundPalette }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 }, }).toDestination();
-            bassSynthRef.current = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.4, sustain: 0.5, release: 1.5 }, }).toDestination();
-            break;
-    }
+      case 'Synthwave':
+        chorusRef.current.wet.value = 0.5;
+        reverbRef.current.wet.value = 0.25;
+        synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: 'fatsawtooth', count: 3, spread: 25 },
+          envelope: { attack: 0.02, decay: 0.45, sustain: 0.5, release: 0.8 },
+        }).chain(chorusRef.current, reverbRef.current);
+        bassSynthRef.current = new Tone.FMSynth({
+          harmonicity: 0.5,
+          envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 1 },
+        }).toDestination();
+        break;
 
-    if (soundPalette === 'Chiptune') {
+      case 'Cyberpunk':
+        reverbRef.current.wet.value = 0.2;
+        synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: 'sawtooth' },
+          envelope: { attack: 0.01, decay: 0.3, sustain: 0.8, release: 0.6 },
+        }).connect(reverbRef.current);
+        bassSynthRef.current = new Tone.MonoSynth({
+          oscillator: { type: 'sawtooth' },
+          filter: { type: 'lowpass', Q: 4 },
+          envelope: { attack: 0.01, decay: 0.3, sustain: 0.3, release: 0.5 },
+        }).toDestination();
+        break;
+
+      case 'Acid':
+        synthRef.current = new Tone.MonoSynth({
+          oscillator: { type: 'sawtooth' },
+          filter: { type: 'lowpass', rolloff: -24, Q: 8 },
+          filterEnvelope: { attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.5, baseFrequency: 200, octaves: 3.5 },
+        }).toDestination();
+        bassSynthRef.current = new Tone.Synth({
+          oscillator: { type: 'square' },
+          envelope: { attack: 0.01, decay: 0.3, sustain: 0.2, release: 0.5 },
+        }).toDestination();
+        break;
+
+      case 'SuperSaw':
+        chorusRef.current.wet.value = 0.4;
+        reverbRef.current.wet.value = 0.3;
+        synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: 'fatsawtooth', count: 5, spread: 35 },
+          envelope: { attack: 0.02, decay: 0.4, sustain: 0.8, release: 0.7 },
+        }).chain(chorusRef.current, reverbRef.current);
+        bassSynthRef.current = new Tone.Synth({
+          oscillator: { type: 'sawtooth' },
+          envelope: { attack: 0.01, decay: 0.3, sustain: 0.4, release: 0.6 },
+        }).toDestination();
+        break;
+
+      case 'TrancePluck':
+        delayRef.current.wet.value = 0.35;
+        reverbRef.current.wet.value = 0.25;
+        synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: 'fattriangle', count: 2, spread: 15 },
+          envelope: { attack: 0.002, decay: 0.3, sustain: 0.05, release: 0.35 },
+        }).chain(delayRef.current, reverbRef.current);
+        bassSynthRef.current = new Tone.Synth({
+          oscillator: { type: 'square' },
+          envelope: { attack: 0.005, decay: 0.25, sustain: 0.2, release: 0.4 },
+        }).toDestination();
+        break;
+
+      case 'FMBells':
+        delayRef.current.wet.value = 0.4;
+        reverbRef.current.wet.value = 0.3;
+        synthRef.current = new Tone.PolySynth(Tone.FMSynth, {
+          harmonicity: 3,
+          modulationIndex: 15,
+          envelope: { attack: 0.01, decay: 0.5, sustain: 0.05, release: 1.5 },
+        }).chain(delayRef.current, reverbRef.current);
+        bassSynthRef.current = new Tone.FMSynth({
+          harmonicity: 0.5,
+          envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 1 },
+        }).toDestination();
+        break;
+
+      case 'FutureBass':
+        chorusRef.current.wet.value = 0.35;
+        reverbRef.current.wet.value = 0.35;
+        synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: 'fatsawtooth', count: 4, spread: 25 },
+          envelope: { attack: 0.04, decay: 0.5, sustain: 0.7, release: 0.8 },
+        }).chain(chorusRef.current, reverbRef.current);
+        bassSynthRef.current = new Tone.Synth({
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.01, decay: 0.5, sustain: 0.4, release: 1.2 },
+        }).toDestination();
+        break;
+
+      case 'GrandPiano':
+        reverbRef.current.wet.value = 0.25;
+        synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: 'fattriangle', count: 3, spread: 18 },
+          envelope: { attack: 0.005, decay: 1.8, sustain: 0.3, release: 1.0 },
+        }).connect(reverbRef.current);
+        bassSynthRef.current = new Tone.Synth({
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.01, decay: 0.6, sustain: 0.3, release: 1.2 },
+        }).toDestination();
+        break;
+
+      case 'VintageRhodes':
+        chorusRef.current.wet.value = 0.25;
+        reverbRef.current.wet.value = 0.2;
+        synthRef.current = new Tone.PolySynth(Tone.FMSynth, {
+          harmonicity: 1.0,
+          modulationIndex: 3.8,
+          envelope: { attack: 0.005, decay: 1.5, sustain: 0.25, release: 0.8 },
+        }).chain(chorusRef.current, reverbRef.current);
+        bassSynthRef.current = new Tone.Synth({
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.01, decay: 0.5, sustain: 0.4, release: 1.0 },
+        }).toDestination();
+        break;
+
+      case 'DreamyPad':
+        chorusRef.current.wet.value = 0.4;
+        reverbRef.current.wet.value = 0.5;
+        synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: 'fatsawtooth', count: 3, spread: 20 },
+          envelope: { attack: 0.35, decay: 1.2, sustain: 0.85, release: 2.0 },
+        }).chain(chorusRef.current, reverbRef.current);
+        bassSynthRef.current = new Tone.Synth({
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.2, decay: 1.0, sustain: 0.7, release: 2.0 },
+        }).toDestination();
+        break;
+
+      case 'JazzOrgan':
+        chorusRef.current.wet.value = 0.35;
+        reverbRef.current.wet.value = 0.2;
+        synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: 'fatsine', count: 3, spread: 12 },
+          envelope: { attack: 0.01, decay: 0.15, sustain: 0.95, release: 0.2 },
+        }).chain(chorusRef.current, reverbRef.current);
+        bassSynthRef.current = new Tone.Synth({
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.01, decay: 0.3, sustain: 0.6, release: 0.5 },
+        }).toDestination();
+        break;
+
+      case 'CathedralOrgan':
+        reverbRef.current.wet.value = 0.5;
+        synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: 'fatsawtooth', count: 4, spread: 18 },
+          envelope: { attack: 0.05, decay: 0.35, sustain: 1.0, release: 0.7 },
+        }).connect(reverbRef.current);
+        bassSynthRef.current = new Tone.Synth({
+          oscillator: { type: 'sawtooth' },
+          envelope: { attack: 0.04, decay: 0.4, sustain: 0.8, release: 0.8 },
+        }).toDestination();
+        break;
+
+      case 'Marimba':
+        reverbRef.current.wet.value = 0.2;
+        synthRef.current = new Tone.PolySynth(Tone.FMSynth, {
+          harmonicity: 3.5,
+          modulationIndex: 5,
+          envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.35 },
+        }).connect(reverbRef.current);
+        bassSynthRef.current = new Tone.Synth({
+          oscillator: { type: 'triangle' },
+          envelope: { attack: 0.005, decay: 0.4, sustain: 0.1, release: 0.4 },
+        }).toDestination();
+        break;
+
+      case 'KeygenTracker':
+        synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          volume: -8,
+          oscillator: { type: 'pulse', width: 0.25 },
+          envelope: { attack: 0.005, decay: 0.12, sustain: 0.4, release: 0.2 },
+        }).toDestination();
+        bassSynthRef.current = new Tone.Synth({
+          volume: -8,
+          oscillator: { type: 'square' },
+          envelope: { attack: 0.005, decay: 0.2, sustain: 0.2, release: 0.3 },
+        }).toDestination();
+        break;
+
+      case 'Arcade84':
+        synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          volume: -8,
+          oscillator: { type: 'square' },
+          envelope: { attack: 0.001, decay: 0.15, sustain: 0.1, release: 0.15 },
+        }).toDestination();
+        bassSynthRef.current = new Tone.Synth({
+          volume: -8,
+          oscillator: { type: 'triangle' },
+          envelope: { attack: 0.001, decay: 0.25, sustain: 0.2, release: 0.3 },
+        }).toDestination();
+        break;
+
+      case 'Chiptune':
+        synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          volume: -10,
+          oscillator: { type: 'square' },
+          envelope: { attack: 0.001, decay: 0.08, sustain: 0.3, release: 0.1 },
+        }).toDestination();
+        bassSynthRef.current = new Tone.Synth({
+          volume: -8,
+          oscillator: { type: 'triangle' },
+          envelope: { attack: 0.001, decay: 0.3, sustain: 0.2, release: 0.5 },
+        }).toDestination();
+        break;
+
+      default: {
+        const rawType = (soundPalette === 'square' || soundPalette === 'sine' || soundPalette === 'triangle' ? soundPalette : 'sawtooth') as "sine" | "square" | "sawtooth" | "triangle";
+        synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: rawType },
+          envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 },
+        }).toDestination();
+        bassSynthRef.current = new Tone.Synth({
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.01, decay: 0.4, sustain: 0.5, release: 1.5 },
+        }).toDestination();
+        break;
+      }
+    }
+    if (soundPalette === 'Chiptune' || soundPalette === 'KeygenTracker' || soundPalette === 'Arcade84') {
         kickSynthRef.current = new Tone.MembraneSynth({ pitchDecay: 0.02, octaves: 4, envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.2 } }).toDestination();
         snareSynthRef.current = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.15, sustain: 0 } }).toDestination();
         const hihatFilter = new Tone.Filter(8000, "highpass").toDestination();
@@ -453,8 +684,16 @@ const App: React.FC = () => {
                   <option value="random">Random</option>
                   <option value="manual">Manual</option>
                 </select>
-                <select id="palette-select" value={soundPalette} onChange={handlePaletteChange} className="px-4 py-2 bg-[var(--bg-control)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] transition-colors duration-200 text-sm flex-grow sm:flex-grow-0">
-                  {soundPalettes.map((p) => (<option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>))}
+                <select id="palette-select" value={soundPalette} onChange={handlePaletteChange} className="px-3.5 py-2 bg-[var(--bg-control)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:ring-[var(--accent-color)] focus:border-[var(--accent-color)] transition-colors duration-200 text-sm font-semibold flex-grow sm:flex-grow-0">
+                  {['Retro & Keygen', 'Electronic & Synth', 'Keys & Ambient', 'Raw Waves'].map((cat) => (
+                    <optgroup key={cat} label={cat}>
+                      {SOUND_PALETTES.filter((p) => p.category === cat).map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
                 </select>
                 {activeMode === 'random' && (
                   <>
