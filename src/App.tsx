@@ -44,6 +44,51 @@ type RootKeyOption = RootNote | 'random';
 type AppMode = 'beatrx' | 'piano' | 'wavegen';
 type Theme = 'light' | 'dark' | 'branded';
 
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Audio Studio Error caught by boundary:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="w-full max-w-md mx-auto bg-[var(--bg-ui)] border border-red-500/50 rounded-2xl p-6 text-center space-y-4 shadow-xl my-8">
+          <div className="text-red-400 text-3xl">⚠️</div>
+          <h3 className="text-lg font-bold text-red-400">Audio Interrupted</h3>
+          <p className="text-xs text-[var(--text-secondary)]">
+            {this.state.error?.message || 'An audio context parameter reset is required.'}
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-colors shadow"
+          >
+            Reset & Resume Audio
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const notesForManualSequence = ['C5', 'B4', 'A4', 'G4', 'F4', 'E4', 'D4', 'C4'] as const;
 
 const App: React.FC = () => {
@@ -495,7 +540,7 @@ const App: React.FC = () => {
             </button>
           </div>
         </div>
-        {renderContent()}
+        <ErrorBoundary key={appMode}>{renderContent()}</ErrorBoundary>
       </div>
       <p className="text-center text-[var(--text-secondary)] text-sm mt-8 opacity-70">
         Made by justgl with Gemini AI

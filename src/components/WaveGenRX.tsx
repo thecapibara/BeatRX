@@ -502,11 +502,15 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
   // Update Sub Oscillator
   useEffect(() => {
     if (subOscRef.current && subGainRef.current) {
-      if (subType === 'off') {
-        subGainRef.current.gain.rampTo(0, 0.05);
-      } else {
-        subOscRef.current.type = subType;
-        subGainRef.current.gain.rampTo(Tone.dbToGain(subVolume), 0.05);
+      try {
+        if (subType === 'off') {
+          subGainRef.current.gain.value = 0;
+        } else {
+          subOscRef.current.type = subType;
+          subGainRef.current.gain.value = Tone.dbToGain(subVolume);
+        }
+      } catch {
+        // ignore
       }
     }
   }, [subType, subVolume]);
@@ -514,11 +518,15 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
   // Update Noise Generator
   useEffect(() => {
     if (noiseRef.current && noiseGainRef.current) {
-      if (noiseType === 'off') {
-        noiseGainRef.current.gain.rampTo(0, 0.05);
-      } else {
-        noiseRef.current.type = noiseType;
-        noiseGainRef.current.gain.rampTo(Tone.dbToGain(noiseVolume), 0.05);
+      try {
+        if (noiseType === 'off') {
+          noiseGainRef.current.gain.value = 0;
+        } else {
+          noiseRef.current.type = noiseType;
+          noiseGainRef.current.gain.value = Tone.dbToGain(noiseVolume);
+        }
+      } catch {
+        // ignore
       }
     }
   }, [noiseType, noiseVolume]);
@@ -526,12 +534,15 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
   // Update Filter
   useEffect(() => {
     if (filterRef.current) {
-      filterRef.current.type = filterType;
-      filterRef.current.frequency.rampTo(filterCutoff, 0.04);
-      filterRef.current.Q.value = filterQ;
+      try {
+        filterRef.current.type = filterType;
+        filterRef.current.frequency.value = filterCutoff;
+        filterRef.current.Q.value = filterQ;
+      } catch {
+        // ignore
+      }
     }
   }, [filterType, filterCutoff, filterQ]);
-
   // Update Master Effects & Volume
   useEffect(() => {
     if (distRef.current) {
