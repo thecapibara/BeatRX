@@ -37,6 +37,8 @@ interface MonsterItem {
   element: HTMLDivElement;
   inUse: boolean;
   note: string | null;
+  keyCode: string | null;
+  timeoutId?: number;
 }
 
 const CATEGORIES: ('All' | PresetCategory)[] = [
@@ -213,8 +215,13 @@ const Piano: React.FC = () => {
   const octaveShiftRef = useRef<number>(octaveShift);
   const keyShiftRef = useRef<number>(keyShift);
   const tuningHzRef = useRef<number>(tuningHz);
+  const isPlayingDemoRef = useRef<boolean>(isPlayingDemo);
   const playNoteByCodeRef = useRef<(keyCode: string, velocity?: number) => void>(() => {});
   const stopNoteByCodeRef = useRef<(keyCode: string) => void>(() => {});
+
+  useEffect(() => {
+    isPlayingDemoRef.current = isPlayingDemo;
+  }, [isPlayingDemo]);
 
   useEffect(() => {
     octaveShiftRef.current = octaveShift;
@@ -326,8 +333,13 @@ const Piano: React.FC = () => {
         // Animate Monster
         const availableMonster = monstersRef.current.find((m) => !m.inUse);
         if (availableMonster) {
+          if (availableMonster.timeoutId) {
+            window.clearTimeout(availableMonster.timeoutId);
+            availableMonster.timeoutId = undefined;
+          }
           availableMonster.inUse = true;
           availableMonster.note = note;
+          availableMonster.keyCode = keyCode;
           let position = notePositionsRef.current[note];
           if (note !== lastNotePlayedRef.current || !position) {
             position = {
@@ -340,6 +352,16 @@ const Piano: React.FC = () => {
           availableMonster.element.style.left = position.left;
           availableMonster.element.style.bottom = position.bottom;
           availableMonster.element.classList.add('singing');
+
+          // Watchdog timer (5s) to auto-hide if keyup was missed
+          availableMonster.timeoutId = window.setTimeout(() => {
+            if (!pressedKeysRef.current.has(keyCode)) {
+              availableMonster.inUse = false;
+              availableMonster.note = null;
+              availableMonster.keyCode = null;
+              availableMonster.element.classList.remove('singing');
+            }
+          }, 5000);
         }
 
         spawnParticles();
@@ -347,6 +369,20 @@ const Piano: React.FC = () => {
     },
     [spawnParticles]
   );
+
+  // Reset all singing monsters helper
+  const resetAllMonsters = useCallback(() => {
+    monstersRef.current.forEach((m) => {
+      if (m.timeoutId) {
+        window.clearTimeout(m.timeoutId);
+        m.timeoutId = undefined;
+      }
+      m.inUse = false;
+      m.note = null;
+      m.keyCode = null;
+      m.element.classList.remove('singing');
+    });
+  }, []);
 
   // Stop a note by keyCode
   const stopNoteByCode = useCallback((keyCode: string) => {
@@ -372,16 +408,34 @@ const Piano: React.FC = () => {
       // ignore
     }
 
-    const monsterToStop = monstersRef.current.find(
-      (m) => m.inUse && m.note === note
-    );
-    if (monsterToStop) {
-      monsterToStop.inUse = false;
-      monsterToStop.note = null;
-      monsterToStop.element.classList.remove('singing');
+    // Stop all monsters tied to this keyCode or note
+    monstersRef.current.forEach((m) => {
+      if (m.inUse && (m.keyCode === keyCode || m.note === note)) {
+        if (m.timeoutId) {
+          window.clearTimeout(m.timeoutId);
+          m.timeoutId = undefined;
+        }
+        m.inUse = false;
+        m.note = null;
+        m.keyCode = null;
+        m.element.classList.remove('singing');
+      }
+    });
+
+    // Safety sweep: if no keys are pressed and demo is not playing, reset all monsters
+    if (pressedKeysRef.current.size === 0 && !isPlayingDemoRef.current) {
+      monstersRef.current.forEach((m) => {
+        if (m.timeoutId) {
+          window.clearTimeout(m.timeoutId);
+          m.timeoutId = undefined;
+        }
+        m.inUse = false;
+        m.note = null;
+        m.keyCode = null;
+        m.element.classList.remove('singing');
+      });
     }
   }, []);
-
   useEffect(() => {
     playNoteByCodeRef.current = playNoteByCode;
   }, [playNoteByCode]);
@@ -400,6 +454,7 @@ const Piano: React.FC = () => {
         pianoContainerRef.current?.querySelectorAll('.key.active').forEach((el) => {
           el.classList.remove('active');
         });
+        resetAllMonsters();
       }
       return next;
     });
@@ -418,6 +473,7 @@ const Piano: React.FC = () => {
         pianoContainerRef.current?.querySelectorAll('.key.active').forEach((el) => {
           el.classList.remove('active');
         });
+        resetAllMonsters();
       }
       return next;
     });
@@ -428,11 +484,10 @@ const Piano: React.FC = () => {
     const preset = SOUND_PRESETS.find((p) => p.id === presetId);
     if (!preset) return;
 
+    resetAllMonsters();
     setSelectedPresetId(preset.id);
     setReverbAmount(preset.defaultReverb);
     setVibratoAmount(preset.defaultVibrato);
-
-    // Swap Synth Node
     if (synthRef.current) {
       synthRef.current.releaseAll();
       synthRef.current.dispose();
@@ -496,12 +551,8 @@ const Piano: React.FC = () => {
     pianoContainerRef.current?.querySelectorAll('.key.active').forEach((el) => {
       el.classList.remove('active');
     });
-    monstersRef.current.forEach((m) => {
-      m.inUse = false;
-      m.note = null;
-      m.element.classList.remove('singing');
-    });
-  }, []);
+    resetAllMonsters();
+  }, [resetAllMonsters]);
 
   // Play Selected Demo Melody
   const playDemo = async () => {
@@ -669,7 +720,7 @@ const Piano: React.FC = () => {
       monsterEl.style.backgroundColor = monsterColors[i % monsterColors.length];
       monsterEl.innerHTML = `<div class="monster-eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div><div class="mouth"></div>`;
       monsterStage.appendChild(monsterEl);
-      monstersRef.current.push({ element: monsterEl, inUse: false, note: null });
+      monstersRef.current.push({ element: monsterEl, inUse: false, note: null, keyCode: null });
     }
 
     // Kaleidoscope animation loop
@@ -795,9 +846,11 @@ const Piano: React.FC = () => {
         }
         key.dataset.pressed = 'false';
       });
-    };
 
-    // Web MIDI setup
+      if (pressedKeysRef.current.size === 0 && !isPlayingDemoRef.current) {
+        resetAllMonsters();
+      }
+    };
     const midiToKeyCodeMap: Record<number, string> = {};
     for (const [keyCode, noteName] of Object.entries(BASE_KEY_NOTE_MAP)) {
       const midiVal = Tone.Midi(noteName).toMidi();
@@ -831,7 +884,17 @@ const Piano: React.FC = () => {
     };
 
     setupMidi();
+    // Window blur listener to release all hanging keys and monsters when switching tabs
+    const handleWindowBlur = () => {
+      pressedKeysRef.current.clear();
+      pianoContainer.querySelectorAll('.key.active').forEach((el) => {
+        el.classList.remove('active');
+      });
+      synthRef.current?.releaseAll();
+      resetAllMonsters();
+    };
 
+    window.addEventListener('blur', handleWindowBlur);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('mouseup', handlePointerUp);
@@ -843,6 +906,7 @@ const Piano: React.FC = () => {
     pianoContainer.addEventListener('touchstart', handlePointerDown, { passive: false });
 
     return () => {
+      window.removeEventListener('blur', handleWindowBlur);
       window.removeEventListener('resize', resizeCanvas);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
@@ -859,7 +923,6 @@ const Piano: React.FC = () => {
           input.onmidimessage = null;
         });
       }
-
       if (synthRef.current) {
         synthRef.current.releaseAll();
         synthRef.current.dispose();
