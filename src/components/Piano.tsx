@@ -912,10 +912,9 @@ const Piano: React.FC = () => {
         ))}
       </div>
 
-      {/* Sound Preset Selector & Tuning / Key Bar */}
-      <div className="w-full bg-[var(--bg-control)] border border-[var(--border-color)] rounded-xl p-3 shadow-md flex flex-col lg:flex-row items-center justify-between gap-3.5">
+      <div className="w-full bg-[var(--bg-control)] border border-[var(--border-color)] rounded-xl p-2.5 shadow-md flex flex-wrap md:flex-nowrap items-center justify-between gap-3">
         {/* Preset Selector */}
-        <div className="flex items-center gap-2 w-full lg:w-auto">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={handlePrevPreset}
             className="p-2 rounded-lg bg-[var(--bg-ui)] hover:bg-[var(--accent-color)] hover:text-white text-[var(--text-primary)] transition-colors"
@@ -925,13 +924,13 @@ const Piano: React.FC = () => {
             <ChevronLeft size={18} />
           </button>
 
-          <div className="flex flex-col text-left flex-grow lg:flex-grow-0">
-            <label htmlFor="sound-selector" className="text-xs font-bold text-[var(--text-secondary)] mb-0.5">
+          <div className="flex flex-col text-left">
+            <label htmlFor="sound-selector" className="text-[10px] font-bold text-[var(--text-secondary)] mb-0.5">
               Instrument ({filteredPresets.length})
             </label>
             <select
               id="sound-selector"
-              className="sound-select font-semibold"
+              className="sound-select font-semibold text-xs py-1.5 px-2.5"
               value={selectedPresetId}
               onChange={(e) => handlePresetSelect(e.target.value)}
             >
@@ -966,21 +965,21 @@ const Piano: React.FC = () => {
         </div>
 
         {/* Current Preset Info Card */}
-        <div className="text-left bg-[var(--bg-ui)] px-3 py-1.5 rounded-lg border border-[var(--border-color)] flex-grow max-w-sm">
+        <div className="text-left bg-[var(--bg-ui)] px-3 py-1.5 rounded-lg border border-[var(--border-color)] flex-1 min-w-0 max-w-sm hidden sm:block">
           <div className="flex items-center gap-1.5">
             <span className="text-base">{currentPreset.icon}</span>
-            <span className="text-xs font-bold text-[var(--text-accent)]">{currentPreset.name}</span>
-            <span className="text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-full bg-[var(--bg-control)] text-[var(--text-secondary)]">
+            <span className="text-xs font-bold text-[var(--text-accent)] truncate">{currentPreset.name}</span>
+            <span className="text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-full bg-[var(--bg-control)] text-[var(--text-secondary)] shrink-0">
               {currentPreset.category}
             </span>
           </div>
-          <p className="text-[11px] text-[var(--text-secondary)] mt-0.5 line-clamp-1">
+          <p className="text-[11px] text-[var(--text-secondary)] mt-0.5 truncate">
             {currentPreset.description}
           </p>
         </div>
 
         {/* Octave Shift, Key Transposition & Micro-Tuning Controls */}
-        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto justify-center lg:justify-end">
+        <div className="flex items-center gap-2 shrink-0 flex-nowrap">
           {/* Octave Controls */}
           <div className="flex items-center bg-[var(--bg-ui)] rounded-lg p-1 border border-[var(--border-color)]">
             <button
@@ -1010,7 +1009,7 @@ const Piano: React.FC = () => {
           <div className="flex items-center bg-[var(--bg-ui)] rounded-lg p-1 border border-[var(--border-color)]">
             <button
               onClick={() => changeKey(-1)}
-              className={`px-2.5 py-1 text-xs font-bold rounded transition-colors ${
+              className={`px-2 py-1 text-xs font-bold rounded transition-colors ${
                 keyShift < 0 ? 'bg-[var(--accent-color)] text-white' : 'hover:bg-[var(--bg-control)] text-[var(--text-secondary)]'
               }`}
               title="Transpose Semitone Down (-1)"
@@ -1018,19 +1017,19 @@ const Piano: React.FC = () => {
               Key -
             </button>
             <span
-              className="px-2.5 text-xs font-mono font-bold text-[var(--text-primary)] min-w-[52px] text-center"
+              className="px-2 text-xs font-mono font-bold text-[var(--text-primary)] min-w-[48px] text-center"
               title={currentKey.name}
             >
               {currentKey.label}
               {keyShift !== 0 && (
-                <span className="text-[10px] opacity-75 ml-1">
+                <span className="text-[10px] opacity-75 ml-0.5">
                   {keyShift > 0 ? `+${keyShift}` : `${keyShift}`}
                 </span>
               )}
             </span>
             <button
               onClick={() => changeKey(1)}
-              className={`px-2.5 py-1 text-xs font-bold rounded transition-colors ${
+              className={`px-2 py-1 text-xs font-bold rounded transition-colors ${
                 keyShift > 0 ? 'bg-[var(--accent-color)] text-white' : 'hover:bg-[var(--bg-control)] text-[var(--text-secondary)]'
               }`}
               title="Transpose Semitone Up (+1)"
@@ -1038,6 +1037,7 @@ const Piano: React.FC = () => {
               Key +
             </button>
           </div>
+
           {/* Master Tuning Reference Frequency (440Hz, 432Hz, 418Hz, etc.) */}
           <div className="flex items-center gap-1 bg-[var(--bg-ui)] rounded-lg px-2 py-1 border border-[var(--border-color)]">
             <Sliders size={12} className="text-[var(--text-accent)]" />
