@@ -210,8 +210,8 @@ const Piano: React.FC = () => {
   const [isPlayingDemo, setIsPlayingDemo] = useState<boolean>(false);
   const [demoProgressText, setDemoProgressText] = useState<string>('');
   const [showKeyGuide, setShowKeyGuide] = useState<boolean>(false);
-
-  // Synchronization refs for event listeners
+  // Synchronization refs for event listeners and audio cancellation
+  const selectedPresetIdRef = useRef<string>(selectedPresetId);
   const octaveShiftRef = useRef<number>(octaveShift);
   const keyShiftRef = useRef<number>(keyShift);
   const tuningHzRef = useRef<number>(tuningHz);
@@ -219,6 +219,9 @@ const Piano: React.FC = () => {
   const playNoteByCodeRef = useRef<(keyCode: string, velocity?: number) => void>(() => {});
   const stopNoteByCodeRef = useRef<(keyCode: string) => void>(() => {});
 
+  useEffect(() => {
+    selectedPresetIdRef.current = selectedPresetId;
+  }, [selectedPresetId]);
   useEffect(() => {
     isPlayingDemoRef.current = isPlayingDemo;
   }, [isPlayingDemo]);
@@ -540,22 +543,52 @@ const Piano: React.FC = () => {
     handlePresetSelect(SOUND_PRESETS[prevIndex].id);
   };
 
-  // Stop Demo Melodies
+  // Stop Demo Melodies immediately and purge all Web Audio scheduled notes
   const stopDemo = useCallback(() => {
+    // 1. Clear all visual animation timeouts
     demoTimeoutsRef.current.forEach((id) => clearTimeout(id));
     demoTimeoutsRef.current = [];
     setIsPlayingDemo(false);
     setDemoProgressText('');
 
+    // 2. Immediately cancel and purge all future scheduled notes by recreating the synth instance
     if (synthRef.current) {
-      synthRef.current.releaseAll();
+      try {
+        synthRef.current.releaseAll();
+        synthRef.current.dispose();
+      } catch {
+        // ignore
+      }
+
+      const activePreset =
+        SOUND_PRESETS.find((p) => p.id === selectedPresetIdRef.current) || SOUND_PRESETS[0];
+      const newSynth = activePreset.createSynth();
+      newSynth.maxPolyphony = 24;
+      newSynth.volume.value = -8;
+
+      const activeTuning =
+        TUNING_PRESETS.find((t) => t.hz === tuningHzRef.current) || TUNING_PRESETS[0];
+      try {
+        newSynth.set({ detune: activeTuning.cents });
+      } catch {
+        // ignore
+      }
+
+      if (vibratoRef.current && reverbRef.current && volumeNodeRef.current) {
+        newSynth.connect(vibratoRef.current);
+        vibratoRef.current.connect(reverbRef.current);
+        reverbRef.current.connect(volumeNodeRef.current);
+      }
+
+      synthRef.current = newSynth;
     }
+
+    // 3. Clear all active visual keys and singing monsters
     pianoContainerRef.current?.querySelectorAll('.key.active').forEach((el) => {
       el.classList.remove('active');
     });
     resetAllMonsters();
   }, [resetAllMonsters]);
-
   // Play Selected Demo Melody
   const playDemo = async () => {
     await startAudio();
