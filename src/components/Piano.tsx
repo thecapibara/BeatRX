@@ -436,6 +436,7 @@ const Piano: React.FC = () => {
       });
     }
   }, []);
+
   useEffect(() => {
     playNoteByCodeRef.current = playNoteByCode;
   }, [playNoteByCode]);
@@ -446,6 +447,7 @@ const Piano: React.FC = () => {
 
   // Transpose Octave Handler
   const changeOctave = (delta: number) => {
+    (document.activeElement as HTMLElement)?.blur();
     setOctaveShift((prev) => {
       const next = Math.max(-2, Math.min(2, prev + delta));
       if (next !== prev && synthRef.current) {
@@ -462,6 +464,7 @@ const Piano: React.FC = () => {
 
   // Change Root Key Handler (Semitone Shift -5 to +6)
   const changeKey = (delta: number) => {
+    (document.activeElement as HTMLElement)?.blur();
     setKeyShift((prev) => {
       let next = prev + delta;
       if (next > 6) next = -5;
@@ -478,7 +481,6 @@ const Piano: React.FC = () => {
       return next;
     });
   };
-
   // Switch sound preset
   const handlePresetSelect = (presetId: string) => {
     const preset = SOUND_PRESETS.find((p) => p.id === presetId);
@@ -771,8 +773,22 @@ const Piano: React.FC = () => {
 
     // Keyboard handlers using refs for fresh state
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement) {
+      if (
+        event.target instanceof HTMLInputElement &&
+        (event.target.type === 'text' || event.target.type === 'search' || event.target.type === 'password')
+      ) {
         return;
+      }
+
+      // If a select or button has DOM focus, blur it immediately so focus returns to the piano
+      if (
+        event.target instanceof HTMLSelectElement ||
+        event.target instanceof HTMLButtonElement ||
+        event.target instanceof HTMLInputElement
+      ) {
+        if (BASE_KEY_NOTE_MAP[event.code]) {
+          (event.target as HTMLElement).blur();
+        }
       }
 
       startAudio();
@@ -783,8 +799,21 @@ const Piano: React.FC = () => {
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement) {
+      if (
+        event.target instanceof HTMLInputElement &&
+        (event.target.type === 'text' || event.target.type === 'search' || event.target.type === 'password')
+      ) {
         return;
+      }
+
+      if (
+        event.target instanceof HTMLSelectElement ||
+        event.target instanceof HTMLButtonElement ||
+        event.target instanceof HTMLInputElement
+      ) {
+        if (BASE_KEY_NOTE_MAP[event.code]) {
+          (event.target as HTMLElement).blur();
+        }
       }
 
       if (BASE_KEY_NOTE_MAP[event.code]) {
@@ -792,7 +821,6 @@ const Piano: React.FC = () => {
         stopNoteByCodeRef.current(event.code);
       }
     };
-
     // Pointer (Mouse / Touch) handlers with glissando support
     let isPointerDown = false;
 
@@ -967,7 +995,10 @@ const Piano: React.FC = () => {
         {CATEGORIES.map((cat) => (
           <button
             key={cat}
-            onClick={() => handleCategorySelect(cat)}
+            onClick={(e) => {
+              handleCategorySelect(cat);
+              (e.currentTarget as HTMLButtonElement).blur();
+            }}
             className={`preset-chip ${selectedCategory === cat ? 'active' : ''}`}
           >
             {cat}
@@ -996,7 +1027,10 @@ const Piano: React.FC = () => {
               id="sound-selector"
               className="sound-select font-semibold text-xs py-1.5 px-2 max-w-[190px] sm:max-w-none"
               value={selectedPresetId}
-              onChange={(e) => handlePresetSelect(e.target.value)}
+              onChange={(e) => {
+                handlePresetSelect(e.target.value);
+                (e.target as HTMLSelectElement).blur();
+              }}
             >
               {selectedCategory === 'All' ? (
                 CATEGORIES.filter((c) => c !== 'All').map((cat) => (
@@ -1107,8 +1141,10 @@ const Piano: React.FC = () => {
             <span className="text-xs font-bold text-[var(--text-secondary)]">Pitch:</span>
             <select
               value={tuningHz}
-              onChange={(e) => setTuningHz(parseInt(e.target.value, 10))}
-              className="bg-transparent text-xs font-bold text-[var(--text-accent)] cursor-pointer focus:outline-none font-mono"
+              onChange={(e) => {
+                setTuningHz(parseInt(e.target.value, 10));
+                (e.target as HTMLSelectElement).blur();
+              }}
               title={currentTuning.description}
             >
               {TUNING_PRESETS.map((t) => (
@@ -1153,6 +1189,7 @@ const Piano: React.FC = () => {
               value={selectedDemoId}
               onChange={(e) => {
                 setSelectedDemoId(e.target.value);
+                (e.target as HTMLSelectElement).blur();
                 if (isPlayingDemo) stopDemo();
               }}
               className="sound-select text-xs py-1.5 px-2 font-medium w-full sm:w-64 truncate"
