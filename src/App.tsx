@@ -496,24 +496,53 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-inter p-4 flex flex-col items-center justify-start pt-10 transition-colors duration-300">
-      <div className="w-full max-w-7xl bg-[var(--bg-ui)] rounded-xl shadow-lg p-6 space-y-6 transition-colors duration-300">
-        <div className="relative flex items-center justify-between gap-4 mb-3 min-h-[48px]">
-          {/* Left: Theme Switcher */}
-          <div className="flex items-center gap-1.5 z-10">
-            <button onClick={() => setTheme('light')} className={`p-2 rounded-full transition-colors ${theme === 'light' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-white'}`} title="Light Theme" aria-label="Light Theme"><LucideSun size={18} /></button>
-            <button onClick={() => setTheme('dark')} className={`p-2 rounded-full transition-colors ${theme === 'dark' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-white'}`} title="Dark Theme" aria-label="Dark Theme"><LucideMoon size={18} /></button>
-            <button onClick={() => setTheme('branded')} className={`p-2 rounded-full transition-colors ${theme === 'branded' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-white'}`} title="Branded Theme" aria-label="Branded Theme"><LucideFlame size={18} /></button>
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-inter p-3 sm:p-4 flex flex-col items-center justify-start pt-6 sm:pt-10 transition-colors duration-300">
+      <div className="w-full max-w-7xl bg-[var(--bg-ui)] rounded-xl shadow-lg p-4 sm:p-6 space-y-4 sm:space-y-6 transition-colors duration-300">
+        {/* Responsive Studio Header */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3 mb-3">
+          {/* Top Bar for Mobile / Left for Desktop */}
+          <div className="flex items-center justify-between w-full md:w-auto">
+            {/* Theme Switcher */}
+            <div className="flex items-center gap-1.5">
+              <button onClick={() => setTheme('light')} className={`p-1.5 sm:p-2 rounded-full transition-colors ${theme === 'light' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-white'}`} title="Light Theme" aria-label="Light Theme"><LucideSun size={16} /></button>
+              <button onClick={() => setTheme('dark')} className={`p-1.5 sm:p-2 rounded-full transition-colors ${theme === 'dark' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-white'}`} title="Dark Theme" aria-label="Dark Theme"><LucideMoon size={16} /></button>
+              <button onClick={() => setTheme('branded')} className={`p-1.5 sm:p-2 rounded-full transition-colors ${theme === 'branded' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-white'}`} title="Branded Theme" aria-label="Branded Theme"><LucideFlame size={16} /></button>
+            </div>
+
+            {/* Mobile Mode Switcher (visible on mobile only) */}
+            <div className="flex items-center gap-1 md:hidden">
+              <button
+                onClick={() => switchAppMode('beatrx')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${appMode === 'beatrx' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-[var(--bg-control)] text-[var(--text-secondary)]'}`}
+              >
+                <LucideMusic size={12} />
+                <span>BeatRX</span>
+              </button>
+              <button
+                onClick={() => switchAppMode('piano')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${appMode === 'piano' ? 'bg-yellow-500 text-gray-900 font-bold shadow-sm' : 'bg-[var(--bg-control)] text-[var(--text-secondary)]'}`}
+              >
+                <LucidePiano size={12} />
+                <span>Piano</span>
+              </button>
+              <button
+                onClick={() => switchAppMode('wavegen')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${appMode === 'wavegen' ? 'bg-green-600 text-white font-bold shadow-sm' : 'bg-[var(--bg-control)] text-[var(--text-secondary)]'}`}
+              >
+                <LucideWaveform size={12} />
+                <span>WaveGen</span>
+              </button>
+            </div>
           </div>
 
-          {/* Center: Title absolutely centered at exact 50% width */}
-          <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none w-full max-w-md">
-            <h1 className="text-3xl font-bold text-[var(--text-accent)] tracking-tight">BeatRX</h1>
-            <p className="text-xs text-[var(--text-secondary)] mt-0.5">Keygen Music Generator & Sound Studio</p>
+          {/* Studio Title - Centered */}
+          <div className="text-center order-first md:order-none">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-accent)] tracking-tight">BeatRX</h1>
+            <p className="text-[11px] sm:text-xs text-[var(--text-secondary)] mt-0.5">Keygen Music Generator & Sound Studio</p>
           </div>
 
-          {/* Right: Mode Buttons */}
-          <div className="flex items-center gap-2 z-10">
+          {/* Desktop Mode Switcher (hidden on mobile, visible on md:) */}
+          <div className="hidden md:flex items-center gap-2">
             <button
               onClick={() => switchAppMode('beatrx')}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${appMode === 'beatrx' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-white'}`}
@@ -542,7 +571,7 @@ const App: React.FC = () => {
         </div>
         <ErrorBoundary key={appMode}>{renderContent()}</ErrorBoundary>
       </div>
-      <p className="text-center text-[var(--text-secondary)] text-sm mt-8 opacity-70">
+      <p className="text-center text-[var(--text-secondary)] text-sm mt-6 sm:mt-8 opacity-70">
         Made by justgl with Gemini AI
       </p>
     </div>

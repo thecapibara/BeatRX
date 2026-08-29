@@ -508,12 +508,15 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
         } else {
           subOscRef.current.type = subType;
           subGainRef.current.gain.value = Tone.dbToGain(subVolume);
+          if (isPlaying && subOscRef.current.state !== 'started') {
+            subOscRef.current.start();
+          }
         }
       } catch {
         // ignore
       }
     }
-  }, [subType, subVolume]);
+  }, [subType, subVolume, isPlaying]);
 
   // Update Noise Generator
   useEffect(() => {
@@ -524,14 +527,15 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
         } else {
           noiseRef.current.type = noiseType;
           noiseGainRef.current.gain.value = Tone.dbToGain(noiseVolume);
+          if (isPlaying && noiseRef.current.state !== 'started') {
+            noiseRef.current.start();
+          }
         }
       } catch {
         // ignore
       }
     }
-  }, [noiseType, noiseVolume]);
-
-  // Update Filter
+  }, [noiseType, noiseVolume, isPlaying]);
   useEffect(() => {
     if (filterRef.current) {
       try {
@@ -607,24 +611,55 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
   }, [lfoTarget, lfoRate, lfoDepth, filterCutoff]);
   // Start/Stop Audio Playback
   const handlePlayPause = async () => {
-    await Tone.start();
+    try {
+      await Tone.start();
+      if (Tone.getContext().rawContext.state === 'suspended') {
+        await Tone.getContext().rawContext.resume();
+      }
+    } catch {
+      // ignore
+    }
+
     if (isPlaying) {
-      oscRef.current?.stop();
-      subOscRef.current?.stop();
-      noiseRef.current?.stop();
+      try {
+        oscRef.current?.stop();
+        subOscRef.current?.stop();
+        noiseRef.current?.stop();
+      } catch {
+        // ignore
+      }
       setIsPlaying(false);
     } else {
-      oscRef.current?.start();
-      subOscRef.current?.start();
-      noiseRef.current?.start();
+      try {
+        if (oscRef.current && oscRef.current.state !== 'started') {
+          oscRef.current.start();
+        }
+        if (subType !== 'off' && subOscRef.current && subOscRef.current.state !== 'started') {
+          subOscRef.current.start();
+        }
+        if (noiseType !== 'off' && noiseRef.current && noiseRef.current.state !== 'started') {
+          noiseRef.current.start();
+        }
+      } catch {
+        // ignore
+      }
       setIsPlaying(true);
     }
   };
 
-  // Apply Sound Preset
-  const handlePresetSelect = (presetId: string) => {
+  // Apply Sound Preset and immediately start playback
+  const handlePresetSelect = async (presetId: string) => {
     const preset = PRESETS.find((p) => p.id === presetId);
     if (!preset) return;
+
+    try {
+      await Tone.start();
+      if (Tone.getContext().rawContext.state === 'suspended') {
+        await Tone.getContext().rawContext.resume();
+      }
+    } catch {
+      // ignore
+    }
 
     setSelectedPresetId(preset.id);
     setWaveType(preset.waveType);
@@ -642,8 +677,22 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
     setDistortion(preset.distortion);
     setDelayWet(preset.delayWet);
     setReverbWet(preset.reverbWet);
-  };
 
+    try {
+      if (oscRef.current && oscRef.current.state !== 'started') {
+        oscRef.current.start();
+      }
+      if (preset.subType !== 'off' && subOscRef.current && subOscRef.current.state !== 'started') {
+        subOscRef.current.start();
+      }
+      if (preset.noiseType !== 'off' && noiseRef.current && noiseRef.current.state !== 'started') {
+        noiseRef.current.start();
+      }
+    } catch {
+      // ignore
+    }
+    setIsPlaying(true);
+  };
   // Adjust Frequency helper
   const adjustFrequency = (delta: number) => {
     setFrequency((prev) => Math.max(1, Math.min(18000, Math.round(prev + delta))));
@@ -852,75 +901,85 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
       {/* Top Oscilloscope & Visualizer Banner */}
       <div className="w-full bg-[var(--bg-ui)] border border-[var(--border-color)] rounded-2xl p-4 shadow-lg space-y-3">
         {/* Visualizer Controls Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-[var(--border-color)]">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-[var(--border-color)]">
+          <div className="flex items-center justify-between w-full sm:w-auto gap-2">
             <button
               onClick={handlePlayPause}
-              className={`flex items-center gap-2 px-5 py-2 rounded-xl font-bold text-sm transition-all shadow-md ${
+              className={`flex items-center gap-1.5 px-4 py-1.5 sm:px-5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md shrink-0 ${
                 isPlaying
                   ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse'
                   : 'bg-indigo-600 hover:bg-indigo-700 text-white'
               }`}
             >
-              {isPlaying ? <Square size={16} /> : <Play size={16} />}
-              <span>{isPlaying ? 'Stop Generator' : 'Start Generator'}</span>
+              {isPlaying ? <Square size={14} /> : <Play size={14} />}
+              <span>{isPlaying ? 'Stop' : 'Start Generator'}</span>
             </button>
 
             {/* Current Frequency & Note Indicator */}
-            <div className="flex items-center gap-2 bg-[var(--bg-control)] px-3 py-1.5 rounded-lg border border-[var(--border-color)] font-mono">
-              <span className="text-xs text-[var(--text-secondary)]">Output:</span>
-              <span className="text-sm font-bold text-[var(--text-accent)]">{Math.round(frequency)} Hz</span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-[var(--bg-ui)] text-[var(--text-primary)]">
+            <div className="flex items-center gap-1.5 bg-[var(--bg-control)] px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg border border-[var(--border-color)] font-mono">
+              <span className="text-[10px] sm:text-xs text-[var(--text-secondary)]">Output:</span>
+              <span className="text-xs sm:text-sm font-bold text-[var(--text-accent)]">{Math.round(frequency)} Hz</span>
+              <span className="text-[10px] sm:text-xs font-semibold px-1.5 py-0.5 rounded bg-[var(--bg-ui)] text-[var(--text-primary)]">
                 {currentNoteName}
               </span>
             </div>
+
+            {/* Mobile WAV Export Button (visible on mobile only) */}
+            <button
+              onClick={handleRecordSample}
+              disabled={isRecording}
+              className="sm:hidden p-1.5 rounded-lg bg-[var(--bg-control)] border border-[var(--border-color)] text-[var(--text-primary)]"
+              title="Export WAV Sample"
+            >
+              <Download size={14} />
+            </button>
           </div>
 
           {/* Visualizer Mode Toggles */}
-          <div className="flex items-center gap-1.5 bg-[var(--bg-control)] p-1 rounded-xl border border-[var(--border-color)]">
+          <div className="flex items-center justify-center gap-1 bg-[var(--bg-control)] p-1 rounded-xl border border-[var(--border-color)] w-full sm:w-auto">
             <button
               onClick={() => setVisualizerMode('oscilloscope')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
                 visualizerMode === 'oscilloscope'
                   ? 'bg-[var(--accent-color)] text-white'
                   : 'text-[var(--text-secondary)] hover:text-white'
               }`}
               title="Time-Domain Oscilloscope Waveform"
             >
-              <Activity size={14} />
+              <Activity size={12} />
               <span>Oscilloscope</span>
             </button>
             <button
               onClick={() => setVisualizerMode('spectrum')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
                 visualizerMode === 'spectrum'
                   ? 'bg-[var(--accent-color)] text-white'
                   : 'text-[var(--text-secondary)] hover:text-white'
               }`}
               title="FFT Frequency Spectrum Analyzer"
             >
-              <BarChart3 size={14} />
+              <BarChart3 size={12} />
               <span>Spectrum</span>
             </button>
             <button
               onClick={() => setVisualizerMode('lissajous')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
                 visualizerMode === 'lissajous'
                   ? 'bg-[var(--accent-color)] text-white'
                   : 'text-[var(--text-secondary)] hover:text-white'
               }`}
               title="Circular Phase Scope / Lissajous Orbit"
             >
-              <Orbit size={14} />
+              <Orbit size={12} />
               <span>Lissajous</span>
             </button>
           </div>
 
-          {/* WAV Export Button */}
+          {/* Desktop WAV Export Button (hidden on mobile, visible on sm:) */}
           <button
             onClick={handleRecordSample}
             disabled={isRecording}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+            className={`hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
               isRecording
                 ? 'bg-amber-600 border-amber-500 text-white animate-pulse'
                 : 'bg-[var(--bg-control)] hover:bg-[var(--bg-ui)] border-[var(--border-color)] text-[var(--text-primary)] hover:text-white'
@@ -928,7 +987,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
             title="Record and download a 3.5-second audio sample as WAV"
           >
             <Download size={14} />
-            <span>{isRecording ? 'Recording Sample...' : 'Export WAV'}</span>
+            <span>{isRecording ? 'Recording...' : 'Export WAV'}</span>
           </button>
         </div>
 

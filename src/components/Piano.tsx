@@ -912,25 +912,26 @@ const Piano: React.FC = () => {
         ))}
       </div>
 
-      <div className="w-full bg-[var(--bg-control)] border border-[var(--border-color)] rounded-xl p-2.5 shadow-md flex flex-wrap md:flex-nowrap items-center justify-between gap-3">
+      {/* Sound Preset Selector & Tuning / Key Bar */}
+      <div className="w-full bg-[var(--bg-control)] border border-[var(--border-color)] rounded-xl p-2.5 shadow-md flex flex-wrap lg:flex-nowrap items-center justify-between gap-2.5">
         {/* Preset Selector */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto justify-between sm:justify-start">
           <button
             onClick={handlePrevPreset}
-            className="p-2 rounded-lg bg-[var(--bg-ui)] hover:bg-[var(--accent-color)] hover:text-white text-[var(--text-primary)] transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg bg-[var(--bg-ui)] hover:bg-[var(--accent-color)] hover:text-white text-[var(--text-primary)] transition-colors"
             title="Previous Preset"
             aria-label="Previous Preset"
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={16} />
           </button>
 
-          <div className="flex flex-col text-left">
+          <div className="flex flex-col text-left flex-grow sm:flex-grow-0">
             <label htmlFor="sound-selector" className="text-[10px] font-bold text-[var(--text-secondary)] mb-0.5">
               Instrument ({filteredPresets.length})
             </label>
             <select
               id="sound-selector"
-              className="sound-select font-semibold text-xs py-1.5 px-2.5"
+              className="sound-select font-semibold text-xs py-1.5 px-2 max-w-[190px] sm:max-w-none"
               value={selectedPresetId}
               onChange={(e) => handlePresetSelect(e.target.value)}
             >
@@ -956,16 +957,16 @@ const Piano: React.FC = () => {
 
           <button
             onClick={handleNextPreset}
-            className="p-2 rounded-lg bg-[var(--bg-ui)] hover:bg-[var(--accent-color)] hover:text-white text-[var(--text-primary)] transition-colors"
+            className="p-1.5 sm:p-2 rounded-lg bg-[var(--bg-ui)] hover:bg-[var(--accent-color)] hover:text-white text-[var(--text-primary)] transition-colors"
             title="Next Preset"
             aria-label="Next Preset"
           >
-            <ChevronRight size={18} />
+            <ChevronRight size={16} />
           </button>
         </div>
 
         {/* Current Preset Info Card */}
-        <div className="text-left bg-[var(--bg-ui)] px-3 py-1.5 rounded-lg border border-[var(--border-color)] flex-1 min-w-0 max-w-sm hidden sm:block">
+        <div className="text-left bg-[var(--bg-ui)] px-3 py-1.5 rounded-lg border border-[var(--border-color)] flex-1 min-w-0 max-w-sm hidden md:block">
           <div className="flex items-center gap-1.5">
             <span className="text-base">{currentPreset.icon}</span>
             <span className="text-xs font-bold text-[var(--text-accent)] truncate">{currentPreset.name}</span>
@@ -977,9 +978,8 @@ const Piano: React.FC = () => {
             {currentPreset.description}
           </p>
         </div>
-
         {/* Octave Shift, Key Transposition & Micro-Tuning Controls */}
-        <div className="flex items-center gap-2 shrink-0 flex-nowrap">
+        <div className="flex items-center justify-center sm:justify-end gap-1.5 w-full sm:w-auto flex-wrap sm:flex-nowrap">
           {/* Octave Controls */}
           <div className="flex items-center bg-[var(--bg-ui)] rounded-lg p-1 border border-[var(--border-color)]">
             <button
@@ -1081,18 +1081,18 @@ const Piano: React.FC = () => {
       </div>
 
       {/* Sound Effects & Demo Melody Bar */}
-      <div className="w-full bg-[var(--bg-ui)] border border-[var(--border-color)] rounded-xl p-3.5 shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="w-full bg-[var(--bg-ui)] border border-[var(--border-color)] rounded-xl p-3 sm:p-3.5 shadow-md flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
         {/* Demo Melodies Player */}
-        <div className="flex items-center gap-2.5 w-full md:w-auto">
-          <div className="flex items-center gap-2">
-            <Music size={16} className="text-[var(--text-accent)]" />
+        <div className="flex items-center justify-between w-full md:w-auto gap-2">
+          <div className="flex items-center gap-1.5 flex-1 min-w-0 sm:flex-none">
+            <Music size={15} className="text-[var(--text-accent)] shrink-0" />
             <select
               value={selectedDemoId}
               onChange={(e) => {
                 setSelectedDemoId(e.target.value);
                 if (isPlayingDemo) stopDemo();
               }}
-              className="sound-select text-xs py-1.5 px-2.5 font-medium w-60 sm:w-72"
+              className="sound-select text-xs py-1.5 px-2 font-medium w-full sm:w-64 truncate"
             >
               {DEMO_MELODIES.map((demo) => (
                 <option key={demo.id} value={demo.id}>
@@ -1104,18 +1104,18 @@ const Piano: React.FC = () => {
 
           <button
             onClick={isPlayingDemo ? stopDemo : playDemo}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
               isPlayingDemo
                 ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse'
                 : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md'
             }`}
           >
-            {isPlayingDemo ? <Square size={14} /> : <Play size={14} />}
+            {isPlayingDemo ? <Square size={13} /> : <Play size={13} />}
             <span>{isPlayingDemo ? 'Stop' : 'Play Demo'}</span>
           </button>
 
           {demoProgressText && (
-            <span className="text-xs font-semibold text-[var(--text-accent)] truncate max-w-[150px]">
+            <span className="hidden lg:inline text-xs font-semibold text-[var(--text-accent)] truncate max-w-[140px]">
               {demoProgressText}
             </span>
           )}
