@@ -109,6 +109,7 @@ export const TUNING_PRESETS: TuningPreset[] = [
     cents: 7.85,
   },
 ];
+
 export const SOUND_PRESETS: SoundPreset[] = [
   // ==================== PIANOS & KEYS ====================
   {
@@ -574,104 +575,146 @@ export const SOUND_PRESETS: SoundPreset[] = [
   },
 ];
 
-// ==================== 16 RICH POLYPHONIC DEMO SONGS ====================
+// ==================== 16 ACCURATE POLYPHONIC DEMO MASTERPIECES ====================
 export const DEMO_MELODIES: DemoMelody[] = [
-  // 1. BEETHOVEN — FÜR ELISE (Authentic Score & Harmony)
+  // 1. BEETHOVEN — FÜR ELISE (Authentic Classical 3/8 Score & Flowing Arpeggios)
   {
     id: 'furElise',
     name: 'Für Elise (L. v. Beethoven)',
     genre: 'Classical Piano Masterpiece',
     recommendedPreset: 'grandPiano',
-    totalDurationMs: 24000,
+    totalDurationMs: 20000,
     events: [
-      // Measure 1-2: Iconic Opening Motif (Delicate 320ms pacing)
-      { time: 0, notes: ['E5'], duration: '8n', velocity: 0.85 },
-      { time: 320, notes: ['D#5'], duration: '8n', velocity: 0.8 },
-      { time: 640, notes: ['E5'], duration: '8n', velocity: 0.85 },
-      { time: 960, notes: ['D#5'], duration: '8n', velocity: 0.8 },
-      { time: 1280, notes: ['E5'], duration: '8n', velocity: 0.85 },
-      { time: 1600, notes: ['B4'], duration: '8n', velocity: 0.75 },
-      { time: 1920, notes: ['D5'], duration: '8n', velocity: 0.8 },
-      { time: 2240, notes: ['C5'], duration: '8n', velocity: 0.8 },
+      // Pickup Bar: Anacrusis on beat 3& (160ms per 16th note in 3/8 time)
+      { time: 0, notes: ['E5'], duration: '16n', velocity: 0.85 },
+      { time: 160, notes: ['D#5'], duration: '16n', velocity: 0.8 },
 
-      // Measure 3: A Minor Theme Entry (Deep A2 bass + left hand arpeggio)
-      { time: 2700, notes: ['A2'], duration: '2n', velocity: 1.0 },
-      { time: 2700, notes: ['A4'], duration: '4n', velocity: 0.9 },
-      { time: 3020, notes: ['E3'], duration: '8n', velocity: 0.7 },
-      { time: 3340, notes: ['A3'], duration: '8n', velocity: 0.75 },
-      { time: 3660, notes: ['C4'], duration: '8n', velocity: 0.75 },
-      { time: 3980, notes: ['B4'], duration: '2n', velocity: 0.9 },
+      // Measure 1: Motif (E-D#-E-B-D-C)
+      { time: 320, notes: ['E5'], duration: '16n', velocity: 0.85 },
+      { time: 480, notes: ['D#5'], duration: '16n', velocity: 0.8 },
+      { time: 640, notes: ['E5'], duration: '16n', velocity: 0.85 },
+      { time: 800, notes: ['B4'], duration: '16n', velocity: 0.8 },
+      { time: 960, notes: ['D5'], duration: '16n', velocity: 0.8 },
+      { time: 1120, notes: ['C5'], duration: '16n', velocity: 0.8 },
 
-      // Measure 4: E7 Dominant Harmony (Deep E2 bass + E3-G#3-B3 arpeggio)
-      { time: 4600, notes: ['E2'], duration: '2n', velocity: 1.0 },
-      { time: 4920, notes: ['E3'], duration: '8n', velocity: 0.7 },
-      { time: 5240, notes: ['G#3'], duration: '8n', velocity: 0.75 },
-      { time: 5560, notes: ['B3'], duration: '8n', velocity: 0.75 },
-      { time: 5880, notes: ['C5'], duration: '2n', velocity: 0.9 },
+      // Measure 2: A Minor Entry (Right hand A4 held, Left hand A2-E3-A3-C4-E4 arpeggio)
+      { time: 1280, notes: ['A2', 'A4'], duration: '4n', velocity: 0.95 },
+      { time: 1440, notes: ['E3'], duration: '16n', velocity: 0.65 },
+      { time: 1600, notes: ['A3'], duration: '16n', velocity: 0.7 },
+      { time: 1760, notes: ['C4'], duration: '16n', velocity: 0.7 },
+      { time: 1920, notes: ['E4'], duration: '16n', velocity: 0.7 },
+      { time: 2080, notes: ['B4'], duration: '16n', velocity: 0.85 },
 
-      // Measure 5: A Minor Resolution (Deep A2 bass + A4 melody)
-      { time: 6500, notes: ['A2'], duration: '2n', velocity: 1.0 },
-      { time: 6820, notes: ['E3'], duration: '8n', velocity: 0.7 },
-      { time: 7140, notes: ['A3'], duration: '8n', velocity: 0.75 },
-      { time: 7460, notes: ['C4'], duration: '8n', velocity: 0.75 },
-      { time: 7780, notes: ['E5'], duration: '4n', velocity: 0.9 },
+      // Measure 3: E7 Harmony (Right hand B4 held, Left hand E2-E3-G#3-B3-E4 arpeggio)
+      { time: 2240, notes: ['E2', 'B4'], duration: '4n', velocity: 0.95 },
+      { time: 2400, notes: ['E3'], duration: '16n', velocity: 0.65 },
+      { time: 2560, notes: ['G#3'], duration: '16n', velocity: 0.7 },
+      { time: 2720, notes: ['B3'], duration: '16n', velocity: 0.7 },
+      { time: 2880, notes: ['E4'], duration: '16n', velocity: 0.7 },
+      { time: 3040, notes: ['C5'], duration: '16n', velocity: 0.85 },
 
-      // Measure 6: Repeat Motif
-      { time: 8300, notes: ['E5'], duration: '8n', velocity: 0.85 },
-      { time: 8620, notes: ['D#5'], duration: '8n', velocity: 0.8 },
-      { time: 8940, notes: ['E5'], duration: '8n', velocity: 0.85 },
-      { time: 9260, notes: ['D#5'], duration: '8n', velocity: 0.8 },
-      { time: 9580, notes: ['E5'], duration: '8n', velocity: 0.85 },
-      { time: 9900, notes: ['B4'], duration: '8n', velocity: 0.75 },
-      { time: 10220, notes: ['D5'], duration: '8n', velocity: 0.8 },
-      { time: 10540, notes: ['C5'], duration: '8n', velocity: 0.8 },
+      // Measure 4: A Minor Harmony (Right hand C5 held, Left hand A2-E3-A3-C4-E4 arpeggio)
+      { time: 3200, notes: ['A2', 'C5'], duration: '4n', velocity: 0.95 },
+      { time: 3360, notes: ['E3'], duration: '16n', velocity: 0.65 },
+      { time: 3520, notes: ['A3'], duration: '16n', velocity: 0.7 },
+      { time: 3680, notes: ['C4'], duration: '16n', velocity: 0.7 },
+      { time: 3840, notes: ['E5'], duration: '16n', velocity: 0.85 },
+      { time: 4000, notes: ['D#5'], duration: '16n', velocity: 0.8 },
 
-      // Measure 7-8: Complete Cadence into A Minor
-      { time: 11000, notes: ['A2'], duration: '2n', velocity: 1.0 },
-      { time: 11000, notes: ['A4'], duration: '4n', velocity: 0.9 },
-      { time: 11320, notes: ['E3'], duration: '8n', velocity: 0.7 },
-      { time: 11640, notes: ['A3'], duration: '8n', velocity: 0.75 },
-      { time: 11960, notes: ['C4'], duration: '8n', velocity: 0.75 },
-      { time: 12280, notes: ['D5'], duration: '8n', velocity: 0.85 },
-      { time: 12600, notes: ['C5'], duration: '8n', velocity: 0.85 },
-      { time: 12920, notes: ['B4'], duration: '8n', velocity: 0.8 },
-      { time: 13240, notes: ['A2', 'E3', 'A3', 'C4', 'E4', 'A4'], duration: '1n', velocity: 1.0 },
+      // Measure 5: Repeat Motif (E-D#-E-B-D-C)
+      { time: 4160, notes: ['E5'], duration: '16n', velocity: 0.85 },
+      { time: 4320, notes: ['D#5'], duration: '16n', velocity: 0.8 },
+      { time: 4480, notes: ['E5'], duration: '16n', velocity: 0.85 },
+      { time: 4640, notes: ['B4'], duration: '16n', velocity: 0.8 },
+      { time: 4800, notes: ['D5'], duration: '16n', velocity: 0.8 },
+      { time: 4960, notes: ['C5'], duration: '16n', velocity: 0.8 },
 
-      // Section B: Lyrical C Major & G Major Waltz (Fermata pause 850ms)
-      { time: 14600, notes: ['C3', 'G3', 'C4', 'E4'], duration: '2n', velocity: 0.95 },
-      { time: 14600, notes: ['E5'], duration: '4n', velocity: 0.9 },
-      { time: 15100, notes: ['G4', 'G5'], duration: '4n', velocity: 0.85 },
-      { time: 15600, notes: ['F5'], duration: '8n', velocity: 0.8 },
-      { time: 15950, notes: ['E5'], duration: '8n', velocity: 0.8 },
+      // Measure 6: Cadence Preparation (Right hand A4 held, Left hand A2-E3-A3-C4-E4)
+      { time: 5120, notes: ['A2', 'A4'], duration: '4n', velocity: 0.95 },
+      { time: 5280, notes: ['E3'], duration: '16n', velocity: 0.65 },
+      { time: 5440, notes: ['A3'], duration: '16n', velocity: 0.7 },
+      { time: 5600, notes: ['C4'], duration: '16n', velocity: 0.7 },
+      { time: 5760, notes: ['E4'], duration: '16n', velocity: 0.7 },
+      { time: 5920, notes: ['C5'], duration: '16n', velocity: 0.85 },
+
+      // Measure 7: Cadence Resolution (E2-E3 with B4-A4)
+      { time: 6080, notes: ['E2', 'B4'], duration: '8n', velocity: 0.9 },
+      { time: 6240, notes: ['E3', 'A4'], duration: '8n', velocity: 0.85 },
+      { time: 6400, notes: ['G#3'], duration: '16n', velocity: 0.7 },
+      { time: 6560, notes: ['B3'], duration: '16n', velocity: 0.7 },
+
+      // Measure 8: Full A Minor Cadence Chord (Resonating with fermata)
+      { time: 6720, notes: ['A2', 'E3', 'A3', 'C4', 'E4', 'A4'], duration: '2n', velocity: 1.0 },
+
+      // Section B: Beautiful C Major & G Major Waltz (Starts with breath at t = 7800ms)
+      { time: 7800, notes: ['C3', 'G4', 'C5', 'E5'], duration: '8n', velocity: 0.95 },
+      { time: 8040, notes: ['G3', 'E4', 'G4', 'G5'], duration: '4n', velocity: 0.9 },
+      { time: 8400, notes: ['F5'], duration: '16n', velocity: 0.8 },
+      { time: 8560, notes: ['E5'], duration: '16n', velocity: 0.8 },
 
       // G Major phrase
-      { time: 16400, notes: ['G2', 'D3', 'G3', 'B3'], duration: '2n', velocity: 0.95 },
-      { time: 16400, notes: ['D5'], duration: '4n', velocity: 0.9 },
-      { time: 16900, notes: ['F4', 'F5'], duration: '4n', velocity: 0.85 },
-      { time: 17400, notes: ['E5'], duration: '8n', velocity: 0.8 },
-      { time: 17750, notes: ['D5'], duration: '8n', velocity: 0.8 },
+      { time: 8720, notes: ['G2', 'F4', 'B4', 'D5'], duration: '8n', velocity: 0.95 },
+      { time: 8960, notes: ['D3', 'F4', 'F5'], duration: '4n', velocity: 0.9 },
+      { time: 9320, notes: ['E5'], duration: '16n', velocity: 0.8 },
+      { time: 9480, notes: ['D5'], duration: '16n', velocity: 0.8 },
 
       // A Minor phrase
-      { time: 18200, notes: ['A2', 'E3', 'A3', 'C4'], duration: '2n', velocity: 0.95 },
-      { time: 18200, notes: ['C5'], duration: '4n', velocity: 0.9 },
-      { time: 18700, notes: ['E4', 'E5'], duration: '4n', velocity: 0.85 },
-      { time: 19200, notes: ['D5'], duration: '8n', velocity: 0.8 },
-      { time: 19550, notes: ['C5'], duration: '8n', velocity: 0.8 },
+      { time: 9640, notes: ['A2', 'E4', 'A4', 'C5'], duration: '8n', velocity: 0.95 },
+      { time: 9880, notes: ['E3', 'C4', 'E5'], duration: '4n', velocity: 0.9 },
+      { time: 10240, notes: ['D5'], duration: '16n', velocity: 0.8 },
+      { time: 10400, notes: ['C5'], duration: '16n', velocity: 0.8 },
 
-      // E Major Dominant Cadence
-      { time: 20000, notes: ['E2', 'B2', 'E3', 'G#3', 'B3', 'E4', 'G#4', 'B4'], duration: '2n', velocity: 1.0 },
+      // E7 Dominant Transition with rich fermata
+      { time: 10560, notes: ['E2', 'B2', 'E3', 'G#3', 'B3', 'E4', 'G#4', 'B4'], duration: '2n', velocity: 1.0 },
 
-      // Return to Theme
-      { time: 21200, notes: ['E5'], duration: '8n', velocity: 0.85 },
-      { time: 21520, notes: ['D#5'], duration: '8n', velocity: 0.8 },
-      { time: 21840, notes: ['E5'], duration: '8n', velocity: 0.85 },
-      { time: 22160, notes: ['D#5'], duration: '8n', velocity: 0.8 },
-      { time: 22480, notes: ['E5'], duration: '8n', velocity: 0.85 },
-      { time: 22800, notes: ['B4'], duration: '8n', velocity: 0.75 },
-      { time: 23120, notes: ['D5'], duration: '8n', velocity: 0.8 },
-      { time: 23440, notes: ['C5'], duration: '8n', velocity: 0.8 },
+      // Return to Theme (Flawless flowing tempo)
+      { time: 11800, notes: ['E5'], duration: '16n', velocity: 0.85 },
+      { time: 11960, notes: ['D#5'], duration: '16n', velocity: 0.8 },
+      { time: 12120, notes: ['E5'], duration: '16n', velocity: 0.85 },
+      { time: 12280, notes: ['D#5'], duration: '16n', velocity: 0.8 },
+      { time: 12440, notes: ['E5'], duration: '16n', velocity: 0.85 },
+      { time: 12600, notes: ['B4'], duration: '16n', velocity: 0.8 },
+      { time: 12760, notes: ['D5'], duration: '16n', velocity: 0.8 },
+      { time: 12920, notes: ['C5'], duration: '16n', velocity: 0.8 },
+
+      // A Minor Arpeggio Return
+      { time: 13080, notes: ['A2', 'A4'], duration: '4n', velocity: 0.95 },
+      { time: 13240, notes: ['E3'], duration: '16n', velocity: 0.65 },
+      { time: 13400, notes: ['A3'], duration: '16n', velocity: 0.7 },
+      { time: 13560, notes: ['C4'], duration: '16n', velocity: 0.7 },
+      { time: 13720, notes: ['E4'], duration: '16n', velocity: 0.7 },
+      { time: 13880, notes: ['B4'], duration: '16n', velocity: 0.85 },
+
+      // E7 Return
+      { time: 14040, notes: ['E2', 'B4'], duration: '4n', velocity: 0.95 },
+      { time: 14200, notes: ['E3'], duration: '16n', velocity: 0.65 },
+      { time: 14360, notes: ['G#3'], duration: '16n', velocity: 0.7 },
+      { time: 14520, notes: ['B3'], duration: '16n', velocity: 0.7 },
+      { time: 14680, notes: ['E4'], duration: '16n', velocity: 0.7 },
+      { time: 14840, notes: ['C5'], duration: '16n', velocity: 0.85 },
+
       // Final Grand Cadence
-      { time: 23800, notes: ['A2', 'E3', 'A3', 'C4', 'E4', 'A4'], duration: '1n', velocity: 1.0 },
+      { time: 15000, notes: ['A2', 'C5'], duration: '4n', velocity: 0.95 },
+      { time: 15160, notes: ['E3'], duration: '16n', velocity: 0.65 },
+      { time: 15320, notes: ['A3'], duration: '16n', velocity: 0.7 },
+      { time: 15480, notes: ['C4'], duration: '16n', velocity: 0.7 },
+      { time: 15640, notes: ['E5'], duration: '16n', velocity: 0.85 },
+      { time: 15800, notes: ['D#5'], duration: '16n', velocity: 0.8 },
+
+      { time: 15960, notes: ['E5'], duration: '16n', velocity: 0.85 },
+      { time: 16120, notes: ['B4'], duration: '16n', velocity: 0.8 },
+      { time: 16280, notes: ['D5'], duration: '16n', velocity: 0.8 },
+      { time: 16440, notes: ['C5'], duration: '16n', velocity: 0.8 },
+
+      { time: 16600, notes: ['A2', 'A4'], duration: '4n', velocity: 0.95 },
+      { time: 16760, notes: ['E3'], duration: '16n', velocity: 0.65 },
+      { time: 16920, notes: ['A3'], duration: '16n', velocity: 0.7 },
+      { time: 17080, notes: ['C4'], duration: '16n', velocity: 0.7 },
+      { time: 17240, notes: ['C5'], duration: '16n', velocity: 0.85 },
+      { time: 17400, notes: ['B4'], duration: '16n', velocity: 0.85 },
+
+      // Final Triumphant A Minor Resolution Chord
+      { time: 17560, notes: ['A2', 'E3', 'A3', 'C4', 'E4', 'A4'], duration: '1n', velocity: 1.0 },
     ],
   },
 
