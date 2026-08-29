@@ -206,10 +206,12 @@ const App: React.FC = () => {
         chorusRef.current.wet.value = 0.5;
         reverbRef.current.wet.value = 0.25;
         synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          volume: -8,
           oscillator: { type: 'fatsawtooth', count: 3, spread: 25 },
           envelope: { attack: 0.02, decay: 0.45, sustain: 0.5, release: 0.8 },
         }).chain(chorusRef.current, reverbRef.current);
         bassSynthRef.current = new Tone.FMSynth({
+          volume: -4,
           harmonicity: 0.5,
           envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 1 },
         }).toDestination();
@@ -218,10 +220,12 @@ const App: React.FC = () => {
       case 'Cyberpunk':
         reverbRef.current.wet.value = 0.2;
         synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          volume: -9,
           oscillator: { type: 'sawtooth' },
           envelope: { attack: 0.01, decay: 0.3, sustain: 0.8, release: 0.6 },
         }).connect(reverbRef.current);
         bassSynthRef.current = new Tone.MonoSynth({
+          volume: -6,
           oscillator: { type: 'sawtooth' },
           filter: { type: 'lowpass', Q: 4 },
           envelope: { attack: 0.01, decay: 0.3, sustain: 0.3, release: 0.5 },
@@ -230,11 +234,13 @@ const App: React.FC = () => {
 
       case 'Acid':
         synthRef.current = new Tone.MonoSynth({
+          volume: -8,
           oscillator: { type: 'sawtooth' },
           filter: { type: 'lowpass', rolloff: -24, Q: 8 },
           filterEnvelope: { attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.5, baseFrequency: 200, octaves: 3.5 },
         }).toDestination();
         bassSynthRef.current = new Tone.Synth({
+          volume: -6,
           oscillator: { type: 'square' },
           envelope: { attack: 0.01, decay: 0.3, sustain: 0.2, release: 0.5 },
         }).toDestination();
@@ -244,10 +250,12 @@ const App: React.FC = () => {
         chorusRef.current.wet.value = 0.4;
         reverbRef.current.wet.value = 0.3;
         synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          volume: -12,
           oscillator: { type: 'fatsawtooth', count: 5, spread: 35 },
           envelope: { attack: 0.02, decay: 0.4, sustain: 0.8, release: 0.7 },
         }).chain(chorusRef.current, reverbRef.current);
         bassSynthRef.current = new Tone.Synth({
+          volume: -6,
           oscillator: { type: 'sawtooth' },
           envelope: { attack: 0.01, decay: 0.3, sustain: 0.4, release: 0.6 },
         }).toDestination();
@@ -257,10 +265,12 @@ const App: React.FC = () => {
         delayRef.current.wet.value = 0.35;
         reverbRef.current.wet.value = 0.25;
         synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          volume: -8,
           oscillator: { type: 'fattriangle', count: 2, spread: 15 },
           envelope: { attack: 0.002, decay: 0.3, sustain: 0.05, release: 0.35 },
         }).chain(delayRef.current, reverbRef.current);
         bassSynthRef.current = new Tone.Synth({
+          volume: -6,
           oscillator: { type: 'square' },
           envelope: { attack: 0.005, decay: 0.25, sustain: 0.2, release: 0.4 },
         }).toDestination();
@@ -270,11 +280,13 @@ const App: React.FC = () => {
         delayRef.current.wet.value = 0.4;
         reverbRef.current.wet.value = 0.3;
         synthRef.current = new Tone.PolySynth(Tone.FMSynth, {
+          volume: -7,
           harmonicity: 3,
           modulationIndex: 15,
           envelope: { attack: 0.01, decay: 0.5, sustain: 0.05, release: 1.5 },
         }).chain(delayRef.current, reverbRef.current);
         bassSynthRef.current = new Tone.FMSynth({
+          volume: -6,
           harmonicity: 0.5,
           envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 1 },
         }).toDestination();
@@ -284,10 +296,12 @@ const App: React.FC = () => {
         chorusRef.current.wet.value = 0.35;
         reverbRef.current.wet.value = 0.35;
         synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          volume: -10,
           oscillator: { type: 'fatsawtooth', count: 4, spread: 25 },
           envelope: { attack: 0.04, decay: 0.5, sustain: 0.7, release: 0.8 },
         }).chain(chorusRef.current, reverbRef.current);
         bassSynthRef.current = new Tone.Synth({
+          volume: -6,
           oscillator: { type: 'sine' },
           envelope: { attack: 0.01, decay: 0.5, sustain: 0.4, release: 1.2 },
         }).toDestination();
@@ -296,10 +310,12 @@ const App: React.FC = () => {
       case 'GrandPiano':
         reverbRef.current.wet.value = 0.25;
         synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          volume: -7,
           oscillator: { type: 'fattriangle', count: 3, spread: 18 },
           envelope: { attack: 0.005, decay: 1.8, sustain: 0.3, release: 1.0 },
         }).connect(reverbRef.current);
         bassSynthRef.current = new Tone.Synth({
+          volume: -6,
           oscillator: { type: 'sine' },
           envelope: { attack: 0.01, decay: 0.6, sustain: 0.3, release: 1.2 },
         }).toDestination();
@@ -309,11 +325,13 @@ const App: React.FC = () => {
         chorusRef.current.wet.value = 0.25;
         reverbRef.current.wet.value = 0.2;
         synthRef.current = new Tone.PolySynth(Tone.FMSynth, {
+          volume: -7,
           harmonicity: 1.0,
           modulationIndex: 3.8,
           envelope: { attack: 0.005, decay: 1.5, sustain: 0.25, release: 0.8 },
         }).chain(chorusRef.current, reverbRef.current);
         bassSynthRef.current = new Tone.Synth({
+          volume: -6,
           oscillator: { type: 'sine' },
           envelope: { attack: 0.01, decay: 0.5, sustain: 0.4, release: 1.0 },
         }).toDestination();
@@ -323,10 +341,12 @@ const App: React.FC = () => {
         chorusRef.current.wet.value = 0.4;
         reverbRef.current.wet.value = 0.5;
         synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          volume: -8,
           oscillator: { type: 'fatsawtooth', count: 3, spread: 20 },
           envelope: { attack: 0.35, decay: 1.2, sustain: 0.85, release: 2.0 },
         }).chain(chorusRef.current, reverbRef.current);
         bassSynthRef.current = new Tone.Synth({
+          volume: -6,
           oscillator: { type: 'sine' },
           envelope: { attack: 0.2, decay: 1.0, sustain: 0.7, release: 2.0 },
         }).toDestination();
@@ -336,10 +356,12 @@ const App: React.FC = () => {
         chorusRef.current.wet.value = 0.35;
         reverbRef.current.wet.value = 0.2;
         synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          volume: -12,
           oscillator: { type: 'fatsine', count: 3, spread: 12 },
           envelope: { attack: 0.01, decay: 0.15, sustain: 0.95, release: 0.2 },
         }).chain(chorusRef.current, reverbRef.current);
         bassSynthRef.current = new Tone.Synth({
+          volume: -8,
           oscillator: { type: 'sine' },
           envelope: { attack: 0.01, decay: 0.3, sustain: 0.6, release: 0.5 },
         }).toDestination();
@@ -348,10 +370,12 @@ const App: React.FC = () => {
       case 'CathedralOrgan':
         reverbRef.current.wet.value = 0.5;
         synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          volume: -12,
           oscillator: { type: 'fatsawtooth', count: 4, spread: 18 },
           envelope: { attack: 0.05, decay: 0.35, sustain: 1.0, release: 0.7 },
         }).connect(reverbRef.current);
         bassSynthRef.current = new Tone.Synth({
+          volume: -8,
           oscillator: { type: 'sawtooth' },
           envelope: { attack: 0.04, decay: 0.4, sustain: 0.8, release: 0.8 },
         }).toDestination();
@@ -360,11 +384,13 @@ const App: React.FC = () => {
       case 'Marimba':
         reverbRef.current.wet.value = 0.2;
         synthRef.current = new Tone.PolySynth(Tone.FMSynth, {
+          volume: -6,
           harmonicity: 3.5,
           modulationIndex: 5,
           envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.35 },
         }).connect(reverbRef.current);
         bassSynthRef.current = new Tone.Synth({
+          volume: -6,
           oscillator: { type: 'triangle' },
           envelope: { attack: 0.005, decay: 0.4, sustain: 0.1, release: 0.4 },
         }).toDestination();
@@ -372,7 +398,7 @@ const App: React.FC = () => {
 
       case 'KeygenTracker':
         synthRef.current = new Tone.PolySynth(Tone.Synth, {
-          volume: -8,
+          volume: -10,
           oscillator: { type: 'pulse', width: 0.25 },
           envelope: { attack: 0.005, decay: 0.12, sustain: 0.4, release: 0.2 },
         }).toDestination();
@@ -385,7 +411,7 @@ const App: React.FC = () => {
 
       case 'Arcade84':
         synthRef.current = new Tone.PolySynth(Tone.Synth, {
-          volume: -8,
+          volume: -10,
           oscillator: { type: 'square' },
           envelope: { attack: 0.001, decay: 0.15, sustain: 0.1, release: 0.15 },
         }).toDestination();
@@ -398,7 +424,7 @@ const App: React.FC = () => {
 
       case 'Chiptune':
         synthRef.current = new Tone.PolySynth(Tone.Synth, {
-          volume: -10,
+          volume: -12,
           oscillator: { type: 'square' },
           envelope: { attack: 0.001, decay: 0.08, sustain: 0.3, release: 0.1 },
         }).toDestination();
@@ -412,10 +438,12 @@ const App: React.FC = () => {
       default: {
         const rawType = (soundPalette === 'square' || soundPalette === 'sine' || soundPalette === 'triangle' ? soundPalette : 'sawtooth') as "sine" | "square" | "sawtooth" | "triangle";
         synthRef.current = new Tone.PolySynth(Tone.Synth, {
+          volume: -8,
           oscillator: { type: rawType },
           envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 },
         }).toDestination();
         bassSynthRef.current = new Tone.Synth({
+          volume: -6,
           oscillator: { type: 'sine' },
           envelope: { attack: 0.01, decay: 0.4, sustain: 0.5, release: 1.5 },
         }).toDestination();
