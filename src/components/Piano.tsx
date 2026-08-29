@@ -405,16 +405,22 @@ const Piano: React.FC = () => {
     });
   };
 
-  // Change Root Key Handler
-  const handleKeyChange = (semitones: number) => {
-    setKeyShift(semitones);
-    if (synthRef.current) {
-      synthRef.current.releaseAll();
-      pressedKeysRef.current.clear();
-      pianoContainerRef.current?.querySelectorAll('.key.active').forEach((el) => {
-        el.classList.remove('active');
-      });
-    }
+  // Change Root Key Handler (Semitone Shift -5 to +6)
+  const changeKey = (delta: number) => {
+    setKeyShift((prev) => {
+      let next = prev + delta;
+      if (next > 6) next = -5;
+      else if (next < -5) next = 6;
+
+      if (synthRef.current) {
+        synthRef.current.releaseAll();
+        pressedKeysRef.current.clear();
+        pianoContainerRef.current?.querySelectorAll('.key.active').forEach((el) => {
+          el.classList.remove('active');
+        });
+      }
+      return next;
+    });
   };
 
   // Switch sound preset
@@ -1000,23 +1006,38 @@ const Piano: React.FC = () => {
             </button>
           </div>
 
-          {/* Root Key / Semitone Transposition */}
-          <div className="flex items-center gap-1 bg-[var(--bg-ui)] rounded-lg px-2 py-1 border border-[var(--border-color)]">
-            <span className="text-xs font-bold text-[var(--text-secondary)]">Key:</span>
-            <select
-              value={keyShift}
-              onChange={(e) => handleKeyChange(parseInt(e.target.value, 10))}
-              className="bg-transparent text-xs font-bold text-[var(--text-accent)] cursor-pointer focus:outline-none"
-              title="Transpose Root Key"
+          {/* Root Key / Semitone Transposition with - / + buttons */}
+          <div className="flex items-center bg-[var(--bg-ui)] rounded-lg p-1 border border-[var(--border-color)]">
+            <button
+              onClick={() => changeKey(-1)}
+              className={`px-2.5 py-1 text-xs font-bold rounded transition-colors ${
+                keyShift < 0 ? 'bg-[var(--accent-color)] text-white' : 'hover:bg-[var(--bg-control)] text-[var(--text-secondary)]'
+              }`}
+              title="Transpose Semitone Down (-1)"
             >
-              {ROOT_KEY_OPTIONS.map((k) => (
-                <option key={k.semitones} value={k.semitones} className="bg-[var(--bg-control)] text-white">
-                  {k.label} ({k.semitones >= 0 ? `+${k.semitones}` : k.semitones} st)
-                </option>
-              ))}
-            </select>
+              Key -
+            </button>
+            <span
+              className="px-2.5 text-xs font-mono font-bold text-[var(--text-primary)] min-w-[52px] text-center"
+              title={currentKey.name}
+            >
+              {currentKey.label}
+              {keyShift !== 0 && (
+                <span className="text-[10px] opacity-75 ml-1">
+                  {keyShift > 0 ? `+${keyShift}` : `${keyShift}`}
+                </span>
+              )}
+            </span>
+            <button
+              onClick={() => changeKey(1)}
+              className={`px-2.5 py-1 text-xs font-bold rounded transition-colors ${
+                keyShift > 0 ? 'bg-[var(--accent-color)] text-white' : 'hover:bg-[var(--bg-control)] text-[var(--text-secondary)]'
+              }`}
+              title="Transpose Semitone Up (+1)"
+            >
+              Key +
+            </button>
           </div>
-
           {/* Master Tuning Reference Frequency (440Hz, 432Hz, 418Hz, etc.) */}
           <div className="flex items-center gap-1 bg-[var(--bg-ui)] rounded-lg px-2 py-1 border border-[var(--border-color)]">
             <Sliders size={12} className="text-[var(--text-accent)]" />
