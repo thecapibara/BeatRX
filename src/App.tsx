@@ -530,10 +530,10 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] font-inter p-3 sm:p-4 flex flex-col items-center justify-start pt-6 sm:pt-10 transition-colors duration-300">
       <div className="w-full max-w-7xl bg-[var(--bg-ui)] rounded-xl shadow-lg p-4 sm:p-6 space-y-4 sm:space-y-6 transition-colors duration-300">
-        {/* Responsive Studio Header */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3 mb-3">
-          {/* Top Bar for Mobile / Left for Desktop */}
-          <div className="flex items-center justify-between w-full md:w-auto">
+        {/* Responsive Studio Header with 3-Column Equal Grid for True 50% Center */}
+        <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-3 mb-3 w-full">
+          {/* Column 1: Left on desktop / Themes & Mobile Switcher on mobile */}
+          <div className="flex items-center justify-between md:justify-start w-full">
             {/* Theme Switcher */}
             <div className="flex items-center gap-1.5">
               <button onClick={() => setTheme('light')} className={`p-1.5 sm:p-2 rounded-full transition-colors ${theme === 'light' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-white'}`} title="Light Theme" aria-label="Light Theme"><LucideSun size={16} /></button>
@@ -567,14 +567,14 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Studio Title - Centered */}
-          <div className="text-center order-first md:order-none">
+          {/* Column 2: Strictly Centered Title (at exact 50% width on Desktop) */}
+          <div className="text-center order-first md:order-none w-full">
             <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-accent)] tracking-tight">BeatRX</h1>
             <p className="text-[11px] sm:text-xs text-[var(--text-secondary)] mt-0.5">Keygen Music Generator & Sound Studio</p>
           </div>
 
-          {/* Desktop Mode Switcher (hidden on mobile, visible on md:) */}
-          <div className="hidden md:flex items-center gap-2">
+          {/* Column 3: Desktop Mode Switcher (Right-aligned) */}
+          <div className="hidden md:flex items-center justify-end gap-2 w-full">
             <button
               onClick={() => switchAppMode('beatrx')}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${appMode === 'beatrx' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-white'}`}
