@@ -460,18 +460,45 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update Main Oscillator
+  // Update Main Oscillator Type
+  useEffect(() => {
+    if (oscRef.current && oscRef.current.type !== waveType) {
+      try {
+        oscRef.current.type = waveType;
+      } catch (err) {
+        console.error('Error changing waveType', err);
+      }
+    }
+  }, [waveType]);
+
+  // Update Frequency
   useEffect(() => {
     if (oscRef.current) {
-      oscRef.current.type = waveType;
-      oscRef.current.frequency.rampTo(frequency, 0.04);
-      oscRef.current.detune.rampTo(detune, 0.04);
+      try {
+        oscRef.current.frequency.value = frequency;
+      } catch {
+        // ignore
+      }
     }
     if (subOscRef.current) {
-      subOscRef.current.frequency.rampTo(frequency / 2, 0.04);
+      try {
+        subOscRef.current.frequency.value = frequency / 2;
+      } catch {
+        // ignore
+      }
     }
-  }, [waveType, frequency, detune]);
+  }, [frequency]);
 
+  // Update Fine Detune
+  useEffect(() => {
+    if (oscRef.current && lfoTarget !== 'pitch') {
+      try {
+        oscRef.current.detune.value = detune;
+      } catch {
+        // ignore
+      }
+    }
+  }, [detune, lfoTarget]);
   // Update Sub Oscillator
   useEffect(() => {
     if (subOscRef.current && subGainRef.current) {
@@ -540,20 +567,33 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
     }
 
     if (lfoTarget === 'pitch') {
-      lfo.min = frequency * (1 - lfoDepth * 0.15);
-      lfo.max = frequency * (1 + lfoDepth * 0.15);
-      lfo.connect(osc.frequency);
+      // Modulate pitch via detune in cents to avoid frequency AudioParam collisions
+      const maxCents = Math.round(lfoDepth * 100);
+      lfo.min = -maxCents;
+      lfo.max = maxCents;
+      try {
+        lfo.connect(osc.detune);
+      } catch {
+        // ignore
+      }
     } else if (lfoTarget === 'filter') {
       lfo.min = Math.max(40, filterCutoff * (1 - lfoDepth * 0.7));
       lfo.max = Math.min(18000, filterCutoff * (1 + lfoDepth * 1.5));
-      lfo.connect(vcf.frequency);
+      try {
+        lfo.connect(vcf.frequency);
+      } catch {
+        // ignore
+      }
     } else if (lfoTarget === 'tremolo') {
       lfo.min = Math.max(0, 1 - lfoDepth);
       lfo.max = 1;
-      lfo.connect(tremolo.gain);
+      try {
+        lfo.connect(tremolo.gain);
+      } catch {
+        // ignore
+      }
     }
-  }, [lfoTarget, lfoRate, lfoDepth, frequency, filterCutoff]);
-
+  }, [lfoTarget, lfoRate, lfoDepth, filterCutoff]);
   // Start/Stop Audio Playback
   const handlePlayPause = async () => {
     await Tone.start();
