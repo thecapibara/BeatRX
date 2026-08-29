@@ -575,27 +575,32 @@ const Piano: React.FC = () => {
     setIsPlayingDemo(true);
     setDemoProgressText(`Playing: ${demo.name}`);
 
+    // High-precision Web Audio hardware clock pre-scheduling (Zero Jitter)
+    const startAudioTime = Tone.now() + 0.08;
+
     demo.events.forEach((event, index) => {
+      const scheduledAudioTime = startAudioTime + event.time / 1000;
+
+      // Transpose demo event notes by key shift if non-zero
+      const playedNotes =
+        keyShiftRef.current === 0
+          ? event.notes
+          : event.notes.map((n) => transposeNoteWithKey(n, 0, keyShiftRef.current));
+
+      // 1. Hardware Sample-Accurate Audio Trigger
+      try {
+        synthRef.current?.triggerAttackRelease(
+          playedNotes,
+          event.duration,
+          scheduledAudioTime,
+          event.velocity || 0.85
+        );
+      } catch {
+        // ignore
+      }
+
+      // 2. Synchronized Visual Animations (Keys & Singing Monsters)
       const tid = window.setTimeout(() => {
-        if (!synthRef.current) return;
-
-        // Transpose demo event notes by key shift if non-zero
-        const playedNotes =
-          keyShiftRef.current === 0
-            ? event.notes
-            : event.notes.map((n) => transposeNoteWithKey(n, 0, keyShiftRef.current));
-
-        try {
-          synthRef.current.triggerAttackRelease(
-            playedNotes,
-            event.duration,
-            undefined,
-            event.velocity || 0.85
-          );
-        } catch {
-          // ignore
-        }
-
         // Highlight all visual keys for played notes simultaneously
         playedNotes.forEach((notePitch) => {
           const matchingKeyEntry = Object.entries(BASE_KEY_NOTE_MAP).find(
@@ -1075,6 +1080,7 @@ const Piano: React.FC = () => {
             {currentPreset.description}
           </p>
         </div>
+
         {/* Octave Shift, Key Transposition & Micro-Tuning Controls */}
         <div className="flex items-center justify-center sm:justify-end gap-1.5 w-full sm:w-auto flex-wrap sm:flex-nowrap">
           {/* Octave Controls */}
@@ -1136,8 +1142,8 @@ const Piano: React.FC = () => {
           </div>
 
           {/* Master Tuning Reference Frequency (440Hz, 432Hz, 418Hz, etc.) */}
-          <div className="flex items-center gap-1 bg-[var(--bg-ui)] rounded-lg px-2 py-1 border border-[var(--border-color)]">
-            <Sliders size={12} className="text-[var(--text-accent)]" />
+          <div className="flex items-center gap-1.5 bg-[var(--bg-ui)] rounded-lg px-2.5 py-1 border border-[var(--border-color)]">
+            <Sliders size={13} className="text-[var(--text-accent)] shrink-0" />
             <span className="text-xs font-bold text-[var(--text-secondary)]">Pitch:</span>
             <select
               value={tuningHz}
@@ -1145,10 +1151,11 @@ const Piano: React.FC = () => {
                 setTuningHz(parseInt(e.target.value, 10));
                 (e.target as HTMLSelectElement).blur();
               }}
+              className="bg-[var(--bg-ui)] text-xs font-mono font-bold text-[var(--text-primary)] cursor-pointer focus:outline-none pr-1"
               title={currentTuning.description}
             >
               {TUNING_PRESETS.map((t) => (
-                <option key={t.hz} value={t.hz} className="bg-[var(--bg-control)] text-white">
+                <option key={t.hz} value={t.hz} className="bg-[var(--bg-control)] text-[var(--text-primary)]">
                   {t.shortName}
                 </option>
               ))}
