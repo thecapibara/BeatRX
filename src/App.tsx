@@ -159,6 +159,7 @@ const App: React.FC = () => {
   const reverbRef = useRef<Tone.Reverb | null>(null);
   const delayRef = useRef<Tone.FeedbackDelay | null>(null);
   const chorusRef = useRef<Tone.Chorus | null>(null);
+  const hihatFilterRef = useRef<Tone.Filter | null>(null);
   const waveformCanvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameId = useRef<number | null>(null);
   const sequenceRef = useRef<Tone.Sequence | null>(null);
@@ -191,7 +192,12 @@ const App: React.FC = () => {
 
     if (!reverbRef.current) reverbRef.current = new Tone.Reverb({ decay: 2, wet: 0 }).toDestination();
     if (!delayRef.current) delayRef.current = new Tone.FeedbackDelay({ delayTime: "8n", feedback: 0.5, wet: 0 }).toDestination();
-    if (!chorusRef.current) chorusRef.current = new Tone.Chorus(4, 2.5, 0.7).toDestination();
+    if (!chorusRef.current) {
+      chorusRef.current = new Tone.Chorus(4, 2.5, 0.7).toDestination();
+      // Chorus depth is modulated by an internal LFO which is not started
+      // automatically in Tone v15; without start() the wet signal is silence.
+      chorusRef.current.start();
+    }
     if (!analyserRef.current) {
       analyserRef.current = new Tone.Analyser('waveform', 2048);
       Tone.Destination.connect(analyserRef.current);
@@ -453,9 +459,13 @@ const App: React.FC = () => {
     if (soundPalette === 'Chiptune' || soundPalette === 'KeygenTracker' || soundPalette === 'Arcade84') {
         kickSynthRef.current = new Tone.MembraneSynth({ pitchDecay: 0.02, octaves: 4, envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.2 } }).toDestination();
         snareSynthRef.current = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.15, sustain: 0 } }).toDestination();
+        hihatFilterRef.current?.dispose();
         const hihatFilter = new Tone.Filter(8000, "highpass").toDestination();
+        hihatFilterRef.current = hihatFilter;
         hihatSynthRef.current = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.05 } }).connect(hihatFilter);
     } else {
+        hihatFilterRef.current?.dispose();
+        hihatFilterRef.current = null;
         kickSynthRef.current = new Tone.MembraneSynth({ octaves: 5, pitchDecay: 0.05, envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.7 } }).toDestination();
         snareSynthRef.current = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.2, sustain: 0 } }).toDestination();
         hihatSynthRef.current = new Tone.MetalSynth({ envelope: { attack: 0.001, decay: 0.1, release: 0.05 }, harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1 }).toDestination();
@@ -504,26 +514,41 @@ const App: React.FC = () => {
       const computedStyle = getComputedStyle(canvas);
       const displayWidth = parseFloat(computedStyle.width);
       const displayHeight = parseFloat(computedStyle.height);
-      canvas.width = displayWidth; canvas.height = displayHeight;
+      const dpr = Math.min(3, window.devicePixelRatio || 1);
+      canvas.width = Math.max(1, Math.round(displayWidth * dpr));
+      canvas.height = Math.max(1, Math.round(displayHeight * dpr));
+      canvas.getContext('2d')?.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     setCanvasDimensions(); window.addEventListener('resize', setCanvasDimensions);
-    return () => { window.removeEventListener('resize', setCanvasDimensions); };
+    const lastDpr = window.devicePixelRatio || 1;
+    let dprQuery: MediaQueryList | null = null;
+    try {
+      // A dpr change (zoom, monitor move) does not fire window resize; watch
+      // it via a resolution media query so the backing store stays sharp.
+      dprQuery = window.matchMedia(`(resolution: ${lastDpr}dppx)`);
+    } catch {
+      // older browsers: ignore
+    }
+    dprQuery?.addEventListener('change', setCanvasDimensions);
+    return () => { window.removeEventListener('resize', setCanvasDimensions); dprQuery?.removeEventListener('change', setCanvasDimensions); };
   }, []);
+
 
   const drawWaveform = useCallback(() => {
     const canvas = waveformCanvasRef.current; if (!canvas || !analyserRef.current) { animationFrameId.current = null; return; }
     const ctx = canvas.getContext('2d'); if (!ctx) { animationFrameId.current = null; return; }
+    const width = canvas.clientWidth; const height = canvas.clientHeight;
     const dataArray = analyserRef.current.getValue(); const bufferLength = dataArray.length;
-    ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.lineWidth = 2;
+    ctx.clearRect(0, 0, width, height); ctx.lineWidth = 2;
     ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#6366f1';
     ctx.beginPath();
-    const sliceWidth = canvas.width * 1.0 / bufferLength; let x = 0;
+    const sliceWidth = width * 1.0 / bufferLength; let x = 0;
     for (let i = 0; i < bufferLength; i++) {
-      const v = dataArray[i] as number; const y = (v * (canvas.height / 2)) + (canvas.height / 2);
+      const v = dataArray[i] as number; const y = (v * (height / 2)) + (height / 2);
       if (i === 0) { ctx.moveTo(x, y); } else { ctx.lineTo(x, y); }
       x += sliceWidth;
     }
-    ctx.lineTo(canvas.width, canvas.height / 2); ctx.stroke();
+    ctx.lineTo(width, height / 2); ctx.stroke();
     animationFrameId.current = requestAnimationFrame(drawWaveform);
   }, []);
 
@@ -642,8 +667,6 @@ const App: React.FC = () => {
     chiptuneMelodyNoteRef.current = null;
     const newPalette = e.target.value as SoundPalette;
     setSoundPalette(newPalette);
-    const newPatternIndex = drumPatterns.findIndex(p => p.name === newPalette);
-    if (newPatternIndex !== -1) { setCurrentDrumPatternIndex(newPatternIndex); }
   };
   
   const handleCycleDrums = () => {
@@ -741,7 +764,7 @@ const App: React.FC = () => {
                     </select>
                     <div className="flex items-center justify-center bg-[var(--bg-control)] border border-[var(--border-color)] rounded-lg px-3 py-1.5">
                         <label htmlFor="arp-toggle" className="text-sm font-medium text-[var(--text-primary)] mr-2">Arp</label>
-                        <input id="arp-toggle" type="checkbox" checked={isArpeggiatorOn} onChange={e => setIsArpeggiatorOn(e.target.checked)} className="w-4 h-4 text-[var(--accent-color)] bg-gray-600 border-gray-500 rounded focus:ring-[var(--accent-color)]" />
+                        <input id="arp-toggle" name="arp" type="checkbox" checked={isArpeggiatorOn} onChange={e => setIsArpeggiatorOn(e.target.checked)} className="w-4 h-4 text-[var(--accent-color)] bg-[var(--bg-ui)] border-[var(--border-color)] rounded focus:ring-[var(--accent-color)] cursor-pointer" />
                     </div>
                   </>
                 )}
@@ -754,8 +777,8 @@ const App: React.FC = () => {
               </div>
               <div className="flex items-center w-full gap-2">
                 <label htmlFor="volume-slider" className="text-lg font-medium text-[var(--text-primary)] min-w-[100px]">Volume: {isMuted ? 'Muted' : `${volume} dB`}</label>
-                <input id="volume-slider" type="range" min="-40" max="0" value={volume} onChange={handleVolumeChange} disabled={isMuted} className="flex-grow h-2 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer range-sm accent-[var(--accent-color)]" />
-                <button onClick={handleToggleMute} className="p-2 rounded-full bg-[var(--bg-control)] hover:bg-opacity-80 transition-colors duration-200">
+                <input id="volume-slider" type="range" min="-40" max="0" value={volume} onChange={handleVolumeChange} disabled={isMuted} className="flex-grow h-2 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer range-sm accent-[var(--accent-color)]" aria-label="Master Volume" />
+                <button onClick={handleToggleMute} className="p-2 rounded-full bg-[var(--bg-control)] hover:brightness-125 transition-all duration-200" aria-label={isMuted ? 'Unmute' : 'Mute'}>
                   {isMuted ? <LucideVolumeX className="w-5 h-5 text-[var(--text-primary)]" /> : <LucideVolume2 className="w-5 h-5 text-[var(--text-primary)]" />}
                 </button>
               </div>
@@ -764,7 +787,7 @@ const App: React.FC = () => {
               <div className="mt-8">
                 <div className="flex items-center justify-center mb-4">
                   <h2 className="text-2xl font-semibold text-[var(--text-accent)] text-center mr-2">Manual Sequencer</h2>
-                  <button onClick={() => setShowManualGuide(true)} className="p-1 rounded-full bg-[var(--bg-control)] hover:bg-opacity-80 transition-colors duration-200" aria-label="Show Manual Mode Guide">
+                  <button onClick={() => setShowManualGuide(true)} className="p-1 rounded-full bg-[var(--bg-control)] hover:brightness-125 transition-all duration-200" aria-label="Show Manual Mode Guide">
                     <LucideInfo className="w-5 h-5 text-[var(--text-primary)]" />
                   </button>
                 </div>
@@ -782,7 +805,25 @@ const App: React.FC = () => {
                 </div>
               </div>
             )}
-            {showManualGuide && (<div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"><div className="bg-[var(--bg-ui)] rounded-xl p-6 max-w-lg w-full shadow-lg"><h3 className="text-2xl font-bold text-[var(--text-accent)] mb-4">Manual Mode Guide</h3><p className="text-[var(--text-primary)] mb-4">In **Manual Mode**, you can compose your own 16-step melody! The grid represents musical notes (rows) over time (columns, 1 to 16 steps).</p><ul className="list-disc list-inside text-[var(--text-primary)] space-y-2 mb-4"><li>**Notes (Rows)**: Each row corresponds to a specific musical note, from `C5` (highest) down to `C4` (lowest).</li><li>**Steps (Columns)**: Each column is a 16th note step in a 4/4 bar (total of 16 steps for one bar). The highlighted column shows the current playback position.</li><li>**Adding Notes**: Click on a cell to toggle a note `on` (green) or `off` at that specific step.</li><li>**Making Chords**: To play a chord, activate multiple notes in the same column (step). For example, activate `C4`, `E4`, and `G4` in the same column for a C Major chord.</li><li>**Rhythm**: Experiment with placing notes at different steps to create various rhythms.</li></ul><p className="text-[var(--text-primary)] mb-4">The drums will continue to play a basic pattern to accompany your melody. Have fun composing!</p><button onClick={() => setShowManualGuide(false)} className="w-full px-4 py-2 bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] text-white font-semibold rounded-lg transition-colors duration-200">Got It!</button></div></div>)}
+            {showManualGuide && (
+              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-label="Manual Mode Guide">
+                <div className="bg-[var(--bg-ui)] rounded-xl p-6 max-w-lg w-full shadow-lg">
+                  <h3 className="text-2xl font-bold text-[var(--text-accent)] mb-4">Manual Mode Guide</h3>
+                  <p className="text-[var(--text-primary)] mb-4">
+                    In <strong>Manual Mode</strong>, you can compose your own 16-step melody! The grid represents musical notes (rows) over time (columns, 1 to 16 steps).
+                  </p>
+                  <ul className="list-disc list-inside text-[var(--text-primary)] space-y-2 mb-4">
+                    <li><strong>Notes (Rows)</strong>: Each row corresponds to a specific musical note, from <code>C5</code> (highest) down to <code>C4</code> (lowest).</li>
+                    <li><strong>Steps (Columns)</strong>: Each column is a 16th note step in a 4/4 bar (total of 16 steps for one bar). The highlighted column shows the current playback position.</li>
+                    <li><strong>Adding Notes</strong>: Click on a cell to toggle a note <em>on</em> (green) or <em>off</em> at that specific step.</li>
+                    <li><strong>Making Chords</strong>: To play a chord, activate multiple notes in the same column (step). For example, activate <code>C4</code>, <code>E4</code>, and <code>G4</code> in the same column for a C Major chord.</li>
+                    <li><strong>Rhythm</strong>: Experiment with placing notes at different steps to create various rhythms.</li>
+                  </ul>
+                  <p className="text-[var(--text-primary)] mb-4">The drums will continue to play a basic pattern to accompany your melody. Have fun composing!</p>
+                  <button onClick={() => setShowManualGuide(false)} className="w-full px-4 py-2 bg-[var(--accent-color)] hover:bg-[var(--accent-hover)] text-white font-semibold rounded-lg transition-colors duration-200">Got It!</button>
+                </div>
+              </div>
+            )}
             <div className="mt-8">
               <h2 className="text-2xl font-semibold text-[var(--text-accent)] mb-4 text-center">Real-time Waveform</h2>
               <div className="bg-[var(--bg-control)] rounded-lg p-2 shadow-inner">
@@ -803,9 +844,9 @@ const App: React.FC = () => {
           <div className="flex items-center justify-between md:justify-start w-full">
             {/* Theme Switcher */}
             <div className="flex items-center gap-1.5">
-              <button onClick={() => setTheme('light')} className={`p-1.5 sm:p-2 rounded-full transition-colors ${theme === 'light' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-white'}`} title="Light Theme" aria-label="Light Theme"><LucideSun size={16} /></button>
-              <button onClick={() => setTheme('dark')} className={`p-1.5 sm:p-2 rounded-full transition-colors ${theme === 'dark' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-white'}`} title="Dark Theme" aria-label="Dark Theme"><LucideMoon size={16} /></button>
-              <button onClick={() => setTheme('branded')} className={`p-1.5 sm:p-2 rounded-full transition-colors ${theme === 'branded' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-white'}`} title="Branded Theme" aria-label="Branded Theme"><LucideFlame size={16} /></button>
+              <button onClick={() => setTheme('light')} className={`p-1.5 sm:p-2 rounded-full transition-colors ${theme === 'light' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`} title="Light Theme" aria-label="Light Theme"><LucideSun size={16} /></button>
+              <button onClick={() => setTheme('dark')} className={`p-1.5 sm:p-2 rounded-full transition-colors ${theme === 'dark' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`} title="Dark Theme" aria-label="Dark Theme"><LucideMoon size={16} /></button>
+              <button onClick={() => setTheme('branded')} className={`p-1.5 sm:p-2 rounded-full transition-colors ${theme === 'branded' ? 'bg-[var(--accent-color)] text-white' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`} title="Branded Theme" aria-label="Branded Theme"><LucideFlame size={16} /></button>
             </div>
 
             {/* Mobile Mode Switcher (visible on mobile only) */}
@@ -844,7 +885,7 @@ const App: React.FC = () => {
           <div className="hidden md:flex items-center justify-end gap-2 w-full">
             <button
               onClick={() => switchAppMode('beatrx')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${appMode === 'beatrx' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-white'}`}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${appMode === 'beatrx' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
               aria-label="Switch to BeatRX Mode"
             >
               <LucideMusic size={16} />
@@ -852,7 +893,7 @@ const App: React.FC = () => {
             </button>
             <button
               onClick={() => switchAppMode('piano')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${appMode === 'piano' ? 'bg-yellow-500 text-gray-900 font-bold shadow-sm' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-white'}`}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${appMode === 'piano' ? 'bg-yellow-500 text-gray-900 font-bold shadow-sm' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
               aria-label="Switch to Piano Mode"
             >
               <LucidePiano size={16} />
@@ -860,7 +901,7 @@ const App: React.FC = () => {
             </button>
             <button
               onClick={() => switchAppMode('wavegen')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${appMode === 'wavegen' ? 'bg-green-600 text-white font-bold shadow-sm' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-white'}`}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${appMode === 'wavegen' ? 'bg-green-600 text-white font-bold shadow-sm' : 'bg-[var(--bg-control)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
               aria-label="Switch to WaveGenRX Mode"
             >
               <LucideWaveform size={16} />
@@ -870,7 +911,7 @@ const App: React.FC = () => {
         </div>
         <ErrorBoundary key={appMode}>{renderContent()}</ErrorBoundary>
       </div>
-      <p className="text-center text-[var(--text-secondary)] text-sm mt-6 sm:mt-8 opacity-70">
+      <p className="text-center text-[var(--text-secondary)] text-sm mt-6 sm:mt-8 opacity-90">
         Made by justgl with Gemini AI
       </p>
     </div>

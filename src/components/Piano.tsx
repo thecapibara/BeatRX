@@ -297,8 +297,8 @@ const Piano: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     particlesRef.current.push({
-      x: (Math.random() - 0.5) * (canvas.width * 0.5),
-      y: (Math.random() - 0.5) * (canvas.height * 0.5),
+      x: (Math.random() - 0.5) * (canvas.clientWidth * 0.5),
+      y: (Math.random() - 0.5) * (canvas.clientHeight * 0.5),
       radius: 1.5,
       velocity: 0.6 + Math.random() * 0.8,
       hue: Math.random() * 360,
@@ -451,28 +451,10 @@ const Piano: React.FC = () => {
   // Transpose Octave Handler
   const changeOctave = (delta: number) => {
     (document.activeElement as HTMLElement)?.blur();
-    setOctaveShift((prev) => {
-      const next = Math.max(-2, Math.min(2, prev + delta));
-      if (next !== prev && synthRef.current) {
-        synthRef.current.releaseAll();
-        pressedKeysRef.current.clear();
-        pianoContainerRef.current?.querySelectorAll('.key.active').forEach((el) => {
-          el.classList.remove('active');
-        });
-        resetAllMonsters();
-      }
-      return next;
-    });
-  };
-
-  // Change Root Key Handler (Semitone Shift -5 to +6)
-  const changeKey = (delta: number) => {
-    (document.activeElement as HTMLElement)?.blur();
-    setKeyShift((prev) => {
-      let next = prev + delta;
-      if (next > 6) next = -5;
-      else if (next < -5) next = 6;
-
+    const prev = octaveShift;
+    const next = Math.max(-2, Math.min(2, prev + delta));
+    if (next !== prev) {
+      setOctaveShift(next);
       if (synthRef.current) {
         synthRef.current.releaseAll();
         pressedKeysRef.current.clear();
@@ -481,8 +463,28 @@ const Piano: React.FC = () => {
         });
         resetAllMonsters();
       }
-      return next;
-    });
+    }
+  };
+
+  // Change Root Key Handler (Semitone Shift -5 to +6, cyclic)
+  const changeKey = (delta: number) => {
+    (document.activeElement as HTMLElement)?.blur();
+    const prev = keyShift;
+    let next = prev + delta;
+    if (next > 6) next = -5;
+    else if (next < -5) next = 6;
+
+    if (next !== prev) {
+      setKeyShift(next);
+      if (synthRef.current) {
+        synthRef.current.releaseAll();
+        pressedKeysRef.current.clear();
+        pianoContainerRef.current?.querySelectorAll('.key.active').forEach((el) => {
+          el.classList.remove('active');
+        });
+        resetAllMonsters();
+      }
+    }
   };
   // Switch sound preset
   const handlePresetSelect = (presetId: string) => {
@@ -655,7 +657,8 @@ const Piano: React.FC = () => {
             );
             if (keyElement) {
               keyElement.classList.add('active');
-              setTimeout(() => keyElement.classList.remove('active'), 280);
+              const ktid = window.setTimeout(() => keyElement.classList.remove('active'), 280);
+              demoTimeoutsRef.current.push(ktid);
             }
           }
 
@@ -668,21 +671,24 @@ const Piano: React.FC = () => {
             availableMonster.element.style.bottom = `${Math.random() * 30 + 18}%`;
             availableMonster.element.classList.add('singing');
 
-            setTimeout(() => {
+            const mtid = window.setTimeout(() => {
               availableMonster.inUse = false;
               availableMonster.note = null;
               availableMonster.element.classList.remove('singing');
             }, 380);
+            demoTimeoutsRef.current.push(mtid);
+
           }
         });
 
         spawnParticles();
 
         if (index === demo.events.length - 1) {
-          setTimeout(() => {
+          const etid = window.setTimeout(() => {
             setIsPlayingDemo(false);
             setDemoProgressText('');
           }, 1200);
+          demoTimeoutsRef.current.push(etid);
         }
       }, event.time);
 
@@ -750,9 +756,9 @@ const Piano: React.FC = () => {
     ];
     const MAX_MONSTERS = 12;
     monstersRef.current = [];
-    while (monsterStage.firstChild && monsterStage.firstChild !== canvas) {
-      monsterStage.removeChild(monsterStage.firstChild);
-    }
+    Array.from(monsterStage.children).forEach((child) => {
+      if (child !== canvas) monsterStage.removeChild(child);
+    });
 
     for (let i = 0; i < MAX_MONSTERS; i++) {
       const monsterEl = document.createElement('div');
@@ -763,13 +769,15 @@ const Piano: React.FC = () => {
       monstersRef.current.push({ element: monsterEl, inUse: false, note: null, keyCode: null });
     }
 
-    // Kaleidoscope animation loop
+    let cssWidth = 0;
+    let cssHeight = 0;
+
     const animateKaleidoscope = () => {
       if (!ctx || !canvas) return;
       ctx.fillStyle = 'rgba(20, 24, 33, 0.35)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
+      ctx.fillRect(0, 0, cssWidth, cssHeight);
+      const centerX = cssWidth / 2;
+      const centerY = cssHeight / 2;
 
       for (let i = particlesRef.current.length - 1; i >= 0; i--) {
         const p = particlesRef.current[i];
@@ -799,14 +807,26 @@ const Piano: React.FC = () => {
     };
 
     const resizeCanvas = () => {
-      if (canvas && monsterStage) {
-        canvas.width = monsterStage.clientWidth;
-        canvas.height = monsterStage.clientHeight;
-      }
+      cssWidth = monsterStage.clientWidth;
+      cssHeight = monsterStage.clientHeight;
+      const dpr = Math.min(3, window.devicePixelRatio || 1);
+      canvas.width = Math.max(1, Math.round(cssWidth * dpr));
+      canvas.height = Math.max(1, Math.round(cssHeight * dpr));
+      ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
+    const lastDpr = window.devicePixelRatio || 1;
+    let dprQuery: MediaQueryList | null = null;
+    try {
+      // A dpr change (zoom, monitor move) does not fire window resize; watch
+      // it via a resolution media query so the backing store stays sharp.
+      dprQuery = window.matchMedia(`(resolution: ${lastDpr}dppx)`);
+    } catch {
+      // older browsers: ignore
+    }
+    dprQuery?.addEventListener('change', resizeCanvas);
     animateKaleidoscope();
 
     // Keyboard handlers using refs for fresh state
@@ -974,6 +994,7 @@ const Piano: React.FC = () => {
     return () => {
       window.removeEventListener('blur', handleWindowBlur);
       window.removeEventListener('resize', resizeCanvas);
+      dprQuery?.removeEventListener('change', resizeCanvas);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('mouseup', handlePointerUp);
@@ -1277,6 +1298,7 @@ const Piano: React.FC = () => {
               value={reverbAmount}
               onChange={(e) => setReverbAmount(parseFloat(e.target.value))}
               className="w-full h-1.5 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-color)]"
+              aria-label="Reverb"
             />
           </div>
 
@@ -1294,6 +1316,7 @@ const Piano: React.FC = () => {
               value={vibratoAmount}
               onChange={(e) => setVibratoAmount(parseFloat(e.target.value))}
               className="w-full h-1.5 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-color)]"
+              aria-label="Vibrato"
             />
           </div>
 
@@ -1313,10 +1336,11 @@ const Piano: React.FC = () => {
                 disabled={isMuted}
                 onChange={(e) => setVolume(parseFloat(e.target.value))}
                 className="w-full h-1.5 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-color)]"
+                aria-label="Master Volume"
               />
               <button
                 onClick={() => setIsMuted((prev) => !prev)}
-                className="p-1 rounded text-[var(--text-secondary)] hover:text-white"
+                className="p-1 rounded text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 title={isMuted ? 'Unmute' : 'Mute'}
               >
                 {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
@@ -1356,7 +1380,8 @@ const Piano: React.FC = () => {
               </h3>
               <button
                 onClick={() => setShowKeyGuide(false)}
-                className="text-gray-400 hover:text-white font-bold text-lg px-2"
+                className="text-gray-400 hover:text-[var(--text-primary)] font-bold text-lg px-2"
+                aria-label="Close guide"
               >
                 ✕
               </button>

@@ -306,6 +306,69 @@ const PRESETS: SoundPreset[] = [
   },
 ];
 
+// Encode an AudioBuffer as a 16-bit PCM WAV (RIFF) Blob.
+// MediaRecorder only produces webm/opus; saving that stream with a ".wav"
+// extension produces a corrupt file, so we decode and re-encode here.
+function encodeWav(audioBuffer: AudioBuffer): Blob {
+  const channels = Math.min(2, audioBuffer.numberOfChannels);
+  const sampleRate = audioBuffer.sampleRate;
+  const frames = audioBuffer.length;
+  const bytesPerSample = 2;
+  const blockAlign = channels * bytesPerSample;
+  const dataSize = frames * blockAlign;
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+
+  const writeString = (offset: number, str: string) => {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  };
+
+  // RIFF header
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + dataSize, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true); // fmt chunk size
+  view.setUint16(20, 1, true); // PCM
+  view.setUint16(22, channels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * blockAlign, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, 16, true); // bits per sample
+  writeString(36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  // Interleave channels, clamp to [-1, 1]
+  const channelData: Float32Array[] = [];
+  for (let c = 0; c < channels; c++) {
+    channelData.push(audioBuffer.getChannelData(c));
+  }
+  let offset = 44;
+  for (let i = 0; i < frames; i++) {
+    for (let c = 0; c < channels; c++) {
+      const sample = Math.max(-1, Math.min(1, channelData[c][i]));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+      offset += bytesPerSample;
+  }
+  }
+
+  return new Blob([buffer], { type: 'audio/wav' });
+}
+
+// Trigger a browser download for a blob without leaving dead object URLs.
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
   // Play state
   const [isPlaying, setIsPlaying] = useState(false);
@@ -368,6 +431,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameId = useRef<number | null>(null);
   const phaseRef = useRef(0);
+  const prevLfoTargetRef = useRef<LfoTarget>('pitch');
 
   // Initialize Audio Pipeline
   useEffect(() => {
@@ -574,12 +638,33 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
 
     lfo.frequency.value = lfoRate;
 
+    // Restore the previously-modulated param to its manual value before
+    // reconnecting, because Tone.connectSignal() zeroes the destination param
+    // (and marks Signal params as `overridden`, making further `.value` writes
+    // collapse to 0 until the flag is cleared).
+    const prevTarget = prevLfoTargetRef.current;
+    if (prevTarget !== lfoTarget) {
+      if (prevTarget === 'pitch') {
+        osc.detune.overridden = false;
+        osc.detune.value = detune;
+      } else if (prevTarget === 'filter') {
+        vcf.frequency.overridden = false;
+        vcf.frequency.value = filterCutoff;
+      } else if (prevTarget === 'tremolo') {
+        // tremolo.gain is a plain Param (no `overridden` flag); just restore it
+        tremolo.gain.value = 1;
+      }
+      prevLfoTargetRef.current = lfoTarget;
+    }
+
     // Disconnect LFO before reconnecting
     try {
       lfo.disconnect();
     } catch {
       // ignore
     }
+
+    if (lfoTarget === 'none') return;
 
     if (lfoTarget === 'pitch') {
       // Modulate pitch via detune in cents to avoid frequency AudioParam collisions
@@ -608,7 +693,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
         // ignore
       }
     }
-  }, [lfoTarget, lfoRate, lfoDepth, filterCutoff]);
+  }, [lfoTarget, lfoRate, lfoDepth, filterCutoff, detune]);
   // Start/Stop Audio Playback
   const handlePlayPause = async () => {
     try {
@@ -695,8 +780,9 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
   };
   // Adjust Frequency helper
   const adjustFrequency = (delta: number) => {
-    setFrequency((prev) => Math.max(1, Math.min(18000, Math.round(prev + delta))));
+    setFrequency((prev) => Math.max(20, Math.min(2500, Math.round(prev + delta))));
   };
+
 
   // Get Musical Note name for current frequency
   const currentNoteName = Tone.Frequency(frequency).toNote();
@@ -725,14 +811,27 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
         }
       };
 
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(recordedChunksRef.current, { type: 'audio/wav' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `wavegen-${Math.round(frequency)}Hz-${waveType}.wav`;
-        a.click();
-        URL.revokeObjectURL(url);
+      mediaRecorder.onstop = async () => {
+        try {
+          Tone.Destination.disconnect(dest);
+        } catch {
+          // ignore
+        }
+        const chunks = recordedChunksRef.current;
+        if (chunks.length === 0) {
+          setIsRecording(false);
+          return;
+        }
+        const baseName = `wavegen-${Math.round(frequency)}Hz-${waveType}`;
+        try {
+          const rawBlob = new Blob(chunks, { type: chunks[0].type || 'audio/webm' });
+          const arrayBuffer = await rawBlob.arrayBuffer();
+          const audioBuffer = await Tone.getContext().rawContext.decodeAudioData(arrayBuffer);
+          downloadBlob(encodeWav(audioBuffer), `${baseName}.wav`);
+        } catch {
+          // Decoding failed: fall back to the browser's native container
+          downloadBlob(new Blob(chunks, { type: 'audio/webm' }), `${baseName}.webm`);
+        }
         setIsRecording(false);
       };
 
@@ -759,21 +858,40 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
     const parent = canvas.parentElement;
     if (!parent) return;
 
+    const canvasCtx = canvas.getContext('2d');
+    if (!canvasCtx) return;
+
+    let cssWidth = 0;
+    let cssHeight = 0;
+    let dpr = 1;
     const resizeCanvas = () => {
-      canvas.width = parent.clientWidth;
-      canvas.height = parent.clientHeight;
+      cssWidth = parent.clientWidth;
+      cssHeight = parent.clientHeight;
+      dpr = Math.min(3, window.devicePixelRatio || 1);
+      canvas.width = Math.max(1, Math.round(cssWidth * dpr));
+      canvas.height = Math.max(1, Math.round(cssHeight * dpr));
+      canvasCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
+    const lastDpr = window.devicePixelRatio || 1;
+    let dprQuery: MediaQueryList | null = null;
+    try {
+      // A dpr change (zoom, monitor move) does not fire window resize; watch
+      // it via a resolution media query so the backing store stays sharp.
+      dprQuery = window.matchMedia(`(resolution: ${lastDpr}dppx)`);
+    } catch {
+      // older browsers: ignore
+    }
+    dprQuery?.addEventListener('change', resizeCanvas);
+
     const draw = () => {
       animationFrameId.current = requestAnimationFrame(draw);
-      const canvasCtx = canvas.getContext('2d');
-      if (!canvasCtx) return;
 
-      const width = canvas.width;
-      const height = canvas.height;
+      const width = cssWidth;
+      const height = cssHeight;
       const halfHeight = height / 2;
 
       // Theme Colors
@@ -890,6 +1008,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
+      dprQuery?.removeEventListener('change', resizeCanvas);
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
       }
@@ -942,7 +1061,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
               className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
                 visualizerMode === 'oscilloscope'
                   ? 'bg-[var(--accent-color)] text-white'
-                  : 'text-[var(--text-secondary)] hover:text-white'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
               title="Time-Domain Oscilloscope Waveform"
             >
@@ -954,7 +1073,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
               className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
                 visualizerMode === 'spectrum'
                   ? 'bg-[var(--accent-color)] text-white'
-                  : 'text-[var(--text-secondary)] hover:text-white'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
               title="FFT Frequency Spectrum Analyzer"
             >
@@ -966,7 +1085,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
               className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
                 visualizerMode === 'lissajous'
                   ? 'bg-[var(--accent-color)] text-white'
-                  : 'text-[var(--text-secondary)] hover:text-white'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
               title="Circular Phase Scope / Lissajous Orbit"
             >
@@ -982,7 +1101,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
             className={`hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
               isRecording
                 ? 'bg-amber-600 border-amber-500 text-white animate-pulse'
-                : 'bg-[var(--bg-control)] hover:bg-[var(--bg-ui)] border-[var(--border-color)] text-[var(--text-primary)] hover:text-white'
+                : 'bg-[var(--bg-control)] hover:bg-[var(--bg-ui)] border-[var(--border-color)] text-[var(--text-primary)]'
             }`}
             title="Record and download a 3.5-second audio sample as WAV"
           >
@@ -1020,7 +1139,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
                   className={`py-1.5 text-xs font-bold uppercase rounded-lg border transition-all ${
                     waveType === type
                       ? 'bg-[var(--accent-color)] border-[var(--accent-color)] text-white shadow-sm'
-                      : 'bg-[var(--bg-control)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-white'
+                      : 'bg-[var(--bg-control)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                 >
                   {type}
@@ -1051,6 +1170,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
                 value={frequency}
                 onChange={(e) => setFrequency(parseFloat(e.target.value))}
                 className="w-full h-1.5 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-color)]"
+                aria-label="Frequency"
               />
               <button
                 onClick={() => adjustFrequency(10)}
@@ -1076,6 +1196,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
               value={detune}
               onChange={(e) => setDetune(parseInt(e.target.value, 10))}
               className="w-full h-1.5 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-color)]"
+              aria-label="Fine Detune"
             />
           </div>
 
@@ -1108,6 +1229,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
                   value={subVolume}
                   onChange={(e) => setSubVolume(parseFloat(e.target.value))}
                   className="w-full h-1.5 bg-[var(--bg-ui)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-color)]"
+                  aria-label="Sub Volume"
                 />
               </div>
             )}
@@ -1141,6 +1263,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
                   value={noiseVolume}
                   onChange={(e) => setNoiseVolume(parseFloat(e.target.value))}
                   className="w-full h-1.5 bg-[var(--bg-ui)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-color)]"
+                  aria-label="Noise Mix"
                 />
               </div>
             )}
@@ -1168,7 +1291,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
                   className={`py-1.5 text-xs font-bold uppercase rounded-lg border transition-all ${
                     filterType === type
                       ? 'bg-[var(--accent-color)] border-[var(--accent-color)] text-white shadow-sm'
-                      : 'bg-[var(--bg-control)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-white'
+                      : 'bg-[var(--bg-control)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                 >
                   {type === 'lowpass' ? 'LP' : type === 'highpass' ? 'HP' : type === 'bandpass' ? 'BP' : 'Notch'}
@@ -1191,6 +1314,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
               value={filterCutoff}
               onChange={(e) => setFilterCutoff(parseFloat(e.target.value))}
               className="w-full h-1.5 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-color)]"
+              aria-label="Filter Cutoff"
             />
           </div>
 
@@ -1208,6 +1332,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
               value={filterQ}
               onChange={(e) => setFilterQ(parseFloat(e.target.value))}
               className="w-full h-1.5 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-color)]"
+              aria-label="Resonance Q"
             />
           </div>
 
@@ -1243,6 +1368,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
                     value={lfoRate}
                     onChange={(e) => setLfoRate(parseFloat(e.target.value))}
                     className="w-full h-1.5 bg-[var(--bg-ui)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-color)]"
+                    aria-label="LFO Speed"
                   />
                 </div>
 
@@ -1260,6 +1386,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
                     value={lfoDepth}
                     onChange={(e) => setLfoDepth(parseFloat(e.target.value))}
                     className="w-full h-1.5 bg-[var(--bg-ui)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-color)]"
+                    aria-label="LFO Depth"
                   />
                 </div>
               </>
@@ -1313,6 +1440,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
                 value={distortion}
                 onChange={(e) => setDistortion(parseFloat(e.target.value))}
                 className="w-full h-1.5 bg-[var(--bg-ui)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-color)]"
+                aria-label="Overdrive / Distortion"
               />
             </div>
 
@@ -1330,6 +1458,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
                 value={delayWet}
                 onChange={(e) => setDelayWet(parseFloat(e.target.value))}
                 className="w-full h-1.5 bg-[var(--bg-ui)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-color)]"
+                aria-label="Stereo Delay Echo"
               />
             </div>
 
@@ -1347,6 +1476,7 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
                 value={reverbWet}
                 onChange={(e) => setReverbWet(parseFloat(e.target.value))}
                 className="w-full h-1.5 bg-[var(--bg-ui)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-color)]"
+                aria-label="Space Reverb"
               />
             </div>
 
@@ -1366,10 +1496,11 @@ const WaveGenRX: React.FC<WaveGenRXProps> = ({ theme }) => {
                   disabled={isMuted}
                   onChange={(e) => setVolume(parseFloat(e.target.value))}
                   className="w-full h-1.5 bg-[var(--bg-ui)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-color)]"
+                  aria-label="Master Volume"
                 />
                 <button
                   onClick={() => setIsMuted((prev) => !prev)}
-                  className="p-1 rounded text-[var(--text-secondary)] hover:text-white"
+                  className="p-1 rounded text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                   title={isMuted ? 'Unmute' : 'Mute'}
                 >
                   {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}

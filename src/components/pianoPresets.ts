@@ -17,7 +17,6 @@ export interface SoundPreset {
   createSynth: () => Tone.PolySynth;
   defaultReverb: number;
   defaultVibrato: number;
-  volumeOffset?: number;
 }
 
 export interface DemoNoteEvent {

@@ -97,6 +97,40 @@
     line-height: 1;
 }
 
+.key.white .key-note {
+    /* darker text for light-colored key surfaces */
+    color: var(--text-piano-label);
+    opacity: 0.85;
+}
+
+/* Touch devices: QWERTY labels are meaningless without a hardware keyboard */
+@media (hover: none) and (pointer: coarse) {
+    .key-label {
+        display: none;
+    }
+    .key.white {
+        padding-top: 2px;
+    }
+}
+
+/* Small screens: shrink keys so more of the keyboard fits without scrolling */
+@media (max-width: 640px) {
+    .piano-container {
+        padding: 10px;
+    }
+    .key.white {
+        width: 34px;
+        min-width: 34px;
+        height: 160px;
+    }
+    .key.black {
+        width: 20px;
+        min-width: 20px;
+        height: 96px;
+        margin: 0 -11px;
+    }
+}
+
 .key.black .key-label {
     color: var(--text-piano-label-black);
 }

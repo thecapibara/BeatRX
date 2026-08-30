@@ -37,7 +37,7 @@
   --border-color: #d1d5db; /* border-gray-300 */
 
   --text-primary: #111827; /* text-gray-900 */
-  --text-secondary: #6b7280; /* text-gray-500 */
+  --text-secondary: #4b5563; /* text-gray-600 */
   --text-accent: #4f46e5; /* text-indigo-600 */
 
   --accent-color: #6366f1;
@@ -64,7 +64,7 @@
   --border-color: #444444;
 
   --text-primary: #e75480; /* Dark Pink */
-  --text-secondary: #a13a5a;
+  --text-secondary: #d4799c; /* lighter pink, 4.5:1+ on branded bgs */
   --text-accent: #ff8fab; /* Lighter Pink */
 
   --accent-color: #e75480;
@@ -78,7 +78,7 @@
   --bg-piano-container: #1a1a1a;
   --bg-monster-stage: #101010;
   --border-monster-stage: #e75480;
-  --text-piano-label: #a13a5a;
+  --text-piano-label: #d4799c;
   --text-piano-label-black: #f8f9fa;
   --bg-piano-select: #e75480;
 }
